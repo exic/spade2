@@ -1,0 +1,4 @@
+Default settings for localhost (127.0.0.1) are in /etc directory.
+If you wish to deploy spade on a different machine, run:
+
+  python configure.py SERVERADDRESS

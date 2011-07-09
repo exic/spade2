@@ -1,0 +1,30 @@
+
+	<spade>
+
+               <platform>
+                       <hostname>127.0.0.1</hostname>
+                       <port>5222</port>
+		       <path>/usr/share/spade</path>
+               </platform>
+
+               <acc>
+                      <hostname>acc.127.0.0.1</hostname>
+                      <password>TlhVPLDS</password>
+                      <port>5222</port>
+		
+	       </acc>
+
+               <ams>
+                      <hostname>ams.127.0.0.1</hostname>
+                      <password>QazYbyDw</password>
+                      <port>5222</port>
+               </ams>
+
+               <df>
+                      <hostname>df.127.0.0.1</hostname>
+                      <password>USHCgIeF</password>
+                      <port>5222</port>
+               </df>
+	       
+        </spade>
+	
