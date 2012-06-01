@@ -41,7 +41,8 @@ class WUI(Thread):
                  self.httpd.timeout = 1
                  #print "WebUserInterface serving at port "+str(self.port)
                  self.notifyAMS()
-             except:
+             except Exception as e:
+                 self.owner.DEBUG("Error installing server: %s, trying different port", e)
                  self.port = random.randint(1024,65536)
                  
         self.owner.DEBUG("WebUserInterface serving at port "+str(self.port))

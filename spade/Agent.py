@@ -68,7 +68,7 @@ color_white        = chr(27) + "[37;1m"
 
 try:
     threading.stack_size(64 * 1024)  # 64k compo
-except: pass
+except Exception: pass
 
 class AbstractAgent(MessageReceiver.MessageReceiver):
     """
@@ -161,19 +161,19 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
         import types
         behavs = {}
         attrs = {}
-        sorted_attrs = []	
+        sorted_attrs = []
         for k in self._behaviourList.keys():
             behavs[id(k)]=k
         for attribute in self.__dict__:
             if eval( "type(self."+attribute+") not in [types.MethodType, types.BuiltinFunctionType, types.BuiltinMethodType, types.FunctionType]" ):
                 if attribute not in ["_agent_log"]:
-		    attrs[attribute] = eval( "str(self."+attribute+")" )
+                    attrs[attribute] = eval( "str(self."+attribute+")" )
         sorted_attrs = attrs.keys()
         sorted_attrs.sort()
-	import pygooglechart
-	chart=pygooglechart.QRChart(125,125)
-	chart.add_data(self.getAID().asXML())
-	chart.set_ec('H',0)
+        import pygooglechart
+        chart=pygooglechart.QRChart(125,125)
+        chart.add_data(self.getAID().asXML())
+        chart.set_ec('H',0)
         return "admin.pyra", {"name":self.getName(),"aid":self.getAID(), "qrcode":chart.get_url(), "defbehav":(id(self._defaultbehaviour),self._defaultbehaviour), "behavs":behavs, "p2pready":self.p2p_ready, "p2proutes":self.p2p_routes, "attrs":attrs, "sorted_attrs":sorted_attrs}
         
     def WUIController_log(self):
@@ -212,8 +212,8 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
                 strm = strm.replace("&quot;",'"')"""
                 x = xml.dom.minidom.parseString(strm)
                 strm = x.toprettyxml()
-		# Quick'n dirty hack to display jabber messages on the WUI
-		# Will fix with a proper display
+                # Quick'n dirty hack to display jabber messages on the WUI
+                # Will fix with a proper display
                 strm = strm.replace(">", "&gt;")
                 strm = strm.replace("<", "&lt;")
                 strm = strm.replace('"', "&quot;")
@@ -253,7 +253,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
             url = diagram.getSequenceDiagram(msc,style="napkin")
         except:
             url=False
-        
+
         return "messages.pyra", {"name":self.getName(), "messages":mess, "diagram": url, "agentslist":agentslist}
 
     def WUIController_search(self, query):
@@ -303,7 +303,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
             for agent in agentslist:
                 if agent.getAID():
                     aw = "#"
-                    for addr in agent.getAID().getAddresses():                    
+                    for addr in agent.getAID().getAddresses():
                         if "awui://" in addr:
                             aw = addr.replace("awui://", "http://")
                             break
@@ -473,7 +473,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
             if self._debug_file:
                 self._debug_file.close()
             self._debug_file = open(self._debug_filename, "a+")
-        except:
+        except Exception:
             self.DEBUG("Could not open file " + self._debug_filename + " as log file", "err")
 
     def getLog(self):
@@ -541,12 +541,12 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
                 try:
                     # Clean
                     del ACLmsg._attrs["from"]
-                except:
+                except Exception:
                     pass
                 try:
                     # Clean
                     del ACLmsg._attrs["to"]
-                except:
+                except Exception:
                     pass
                 ACLmsg.setContent(mess.getBody())
                 # Rebuild sender and receiver
@@ -559,7 +559,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
                     if envelope.getFrom():
                         try:
                             ACLmsg.setSender(envelope.getFrom().getStripped())
-                        except:
+                        except Exception:
                             ACLmsg.setSender(envelope.getFrom())
                     else:
                         ACLmsg.setSender(AID.aid(str(mess.getFrom().getStripped()), ["xmpp://"+str(mess.getFrom().getStripped())]))
@@ -817,7 +817,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
         #the only address is not an xmpp address,
         #we need the full sender AID field
         try:
-            if len(ACLmsg.getSender().getAddresses()) > 1 or \
+            if method=="xmppfipa" or len(ACLmsg.getSender().getAddresses()) > 1 or \
                 "xmpp" not in ACLmsg.getSender().getAddresses()[0]:
                 envelope.setFrom(ACLmsg.getSender())
                 generate_envelope = True
@@ -941,7 +941,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
         try:
             #Try to get the contact's url
             url = self.p2p_routes[to]["url"]
-        except:
+        except Exception:
             #The contact is not in our routes
             self.DEBUG("P2P: The contact " + str(to) + " is not in our routes. Starting negotiation","warn")
             self.initiateStream(to)
@@ -958,7 +958,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
                             self.p2p_routes[to]['p2p'] = True
                             self.p2p_routes[to]['failed_time'] = 0.0
                             self.p2p_lock.release()
-                    except:
+                    except Exception:
                         #The p2p connection is really faulty
                         self.DEBUG("P2P: The p2p connection is really faulty","warn")
                         return False
@@ -994,7 +994,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
                     self.p2p_routes[to]["socket"] = s
                     self.p2p_lock.release()
                     connected = True
-                except:
+                except Exception:
                     tries -= 1
                     _exception = sys.exc_info()
                     if _exception[0]:
@@ -1032,7 +1032,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
                 try:
                     del s
                     del self.p2p_routes[to]["socket"]
-                except: pass
+                except Exception: pass
                 self.p2p_lock.release()
                 #Get address and port AGAIN
                 scheme, address = url.split("://",1)
@@ -1078,7 +1078,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
         Stops the agent execution and blocks until the agent dies
         """
 
-	self.wui.stop()
+        self.wui.stop()
 
         self._kill()
         if timeout > 0:
@@ -1145,7 +1145,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
                     for b in bL:
                         t = bL[b]
                         if (t != None):
-			    if (t.match(msg) == True):
+                            if (t.match(msg) == True):
                                 if ((b == types.ClassType or type(b) == types.TypeType) and issubclass(b, Behaviour.EventBehaviour)):
                                     ib = b()
                                     if ib.onetime:
@@ -1408,16 +1408,16 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
 
 
     def searchService(self, DAD):
-    	"""
-    	search a service in the DF
-    	the service template is a DfAgentDescriptor
+        """
+        search a service in the DF
+        the service template is a DfAgentDescriptor
 
-    	"""
-    	if isinstance(DAD,DF.Service):
+        """
+        if isinstance(DAD,DF.Service):
             DAD=DAD.getDAD()
             returnDAD=False
         else: returnDAD=True
-    	
+        
         msg = ACLMessage.ACLMessage()
         template = Behaviour.ACLTemplate()
         template.setConversationId(msg.getConversationId())
@@ -1456,7 +1456,7 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
             return r
 
 
-		
+                
     def modifyService(self, DAD, methodCall=None):
         """
         modifies a service in the DF
@@ -1552,46 +1552,46 @@ class AbstractAgent(MessageReceiver.MessageReceiver):
 # Changed to be a 'daemonic' python Thread
 class jabberProcess(threading.Thread):
 
-	def __init__(self, socket, owner):
-		self.jabber = socket
-		#self._alive = True
-		self._forceKill = threading.Event()
-		self._forceKill.clear()
-		threading.Thread.__init__(self)
-		self.setDaemon(False)
-		self._owner = owner
+    def __init__(self, socket, owner):
+            self.jabber = socket
+            #self._alive = True
+            self._forceKill = threading.Event()
+            self._forceKill.clear()
+            threading.Thread.__init__(self)
+            self.setDaemon(False)
+            self._owner = owner
 
-	def _kill(self):
-		try:
-			self._forceKill.set()
-		except:
-			#Agent is already dead
-			pass
+    def _kill(self):
+            try:
+                    self._forceKill.set()
+            except Exception:
+                    #Agent is already dead
+                    pass
 
-	def forceKill(self):
-		return self._forceKill.isSet()
+    def forceKill(self):
+            return self._forceKill.isSet()
 
-	def run(self):
-		"""
-		periodic jabber update
-		"""
-		while not self.forceKill():
-		    try:
-			err = self.jabber.Process(0.4)
-		    except Exception, e:
-			_exception = sys.exc_info()
-			if _exception[0]:
-			    self._owner.DEBUG( '\n'+''.join(traceback.format_exception(_exception[0], _exception[1], _exception[2])).rstrip(),"err")
-			    self._owner.DEBUG("Exception in jabber process: "+ str(e),"err")
-			    self._owner.DEBUG("Jabber connection failed: "+self._owner.getAID().getName()+" (dying)","err")
-			    self._kill()
-			    self._owner.stop()
-			    err = None
+    def run(self):
+            """
+            periodic jabber update
+            """
+            while not self.forceKill():
+                try:
+                    err = self.jabber.Process(0.4)
+                except Exception, e:
+                    _exception = sys.exc_info()
+                    if _exception[0]:
+                        self._owner.DEBUG( '\n'+''.join(traceback.format_exception(_exception[0], _exception[1], _exception[2])).rstrip(),"err")
+                        self._owner.DEBUG("Exception in jabber process: "+ str(e),"err")
+                        self._owner.DEBUG("Jabber connection failed: "+self._owner.getAID().getName()+" (dying)","err")
+                        self._kill()
+                        self._owner.stop()
+                        err = None
 
-		    if err == None or err == 0:  # None or zero the integer, socket closed
-			self._owner.DEBUG("Agent disconnected: "+self._owner.getAID().getName()+" (dying)","err")
-			self._kill()
-			self._owner.stop()
+                if err == None or err == 0:  # None or zero the integer, socket closed
+                    self._owner.DEBUG("Agent disconnected: "+self._owner.getAID().getName()+" (dying)","err")
+                    self._kill()
+                    self._owner.stop()
 
 
 
@@ -1625,6 +1625,7 @@ class PlatformAgent(AbstractAgent):
             return False
 
 
+        print "authing..."
         if (self.jabber.auth(name=name,password=password) == None):
               raise NotImplementedError
 
@@ -1647,7 +1648,7 @@ class PlatformAgent(AbstractAgent):
         for b in self._behaviourList:
             try:
                 b.kill()
-            except:
+            except Exception:
                 pass
                 
         if (self._defaultbehaviour != None):
@@ -1681,7 +1682,7 @@ class Agent(AbstractAgent):
             self.DEBUG("NotImplementedError: Could not register agent %s"%(agentjid),"err")
             self.stop()
             return
-        except:
+        except Exception:
             self.DEBUG("Could not register agent %s"%(agentjid),"err")
             self.stop()
             return
@@ -1770,7 +1771,7 @@ class Agent(AbstractAgent):
                 b.kill()
                 if "P2PBehaviour" in str(b.__class__):
                     b.onEnd()
-            except:
+            except Exception:
                 pass
 
         if (self._defaultbehaviour != None):

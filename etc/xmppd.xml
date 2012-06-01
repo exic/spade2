@@ -1,18 +1,18 @@
 
-		<server>
-	        	<servernames>
-	                	<name>127.0.0.1</name>
-		        </servernames>
-		        <certificate file="xmppd.pem"/>
-	        	<spool path="/home/balkian/.spade/spool"/>
-			<plugins>
-				<MUC jid="muc.127.0.0.1" name="SPADE MUC Component"/>
-				<WQ jid="wq.127.0.0.1" name="SPADE Workgroup Queues"/>
-			</plugins>
+                <server>
+                        <servernames>
+                                <name>localhost</name>
+                        </servernames>
+                        <certificate file="xmppd.pem"/>
+                        <spool path="/home/jgrote/.spade/spool"/>
+                        <plugins>
+                                <MUC jid="muc.localhost" name="SPADE MUC Component"/>
+                                <WQ jid="wq.localhost" name="SPADE Workgroup Queues"/>
+                        </plugins>
                         <components>
-                                <AMS jid="ams.127.0.0.1" name="AMS" username="ams" password="QazYbyDw"/>
-                                <DF jid="df.127.0.0.1" name="DF" username="df" password="USHCgIeF"/>
-                                <ACC jid="acc.127.0.0.1" name="ACC" username="acc" password="TlhVPLDS"/>
+                                <AMS jid="ams.localhost" name="AMS" username="ams" password="LKYwEJzq"/>
+                                <DF jid="df.localhost" name="DF" username="df" password="WoLacuqb"/>
+                                <ACC jid="acc.localhost" name="ACC" username="acc" password="KzjtATXU"/>
                         </components>
-		</server>
-		
+                </server>
+                
