@@ -5,7 +5,6 @@ import xmltools
 from ASN1Parser import ASN1Parser
 from RSAKey import *
 
-
 class Python_RSAKey(RSAKey):
     def __init__(self, n=0, e=0, d=0, p=0, q=0, dP=0, dQ=0, qInv=0):
         if (n and not e) or (e and not n):
@@ -51,6 +50,7 @@ class Python_RSAKey(RSAKey):
         #Return the output
         return c
 
+
     def _rawPrivateKeyOpHelper(self, m):
         #Non-CRT version
         #c = powMod(m, self.d, self.n)
@@ -66,26 +66,25 @@ class Python_RSAKey(RSAKey):
         m = powMod(c, self.e, self.n)
         return m
 
-    def acceptsPassword(self):
-        return False
+    def acceptsPassword(self): return False
 
     def write(self, indent=''):
         if self.d:
-            s = indent + '<privateKey xmlns="http://trevp.net/rsa">\n'
+            s = indent+'<privateKey xmlns="http://trevp.net/rsa">\n'
         else:
-            s = indent + '<publicKey xmlns="http://trevp.net/rsa">\n'
-        s += indent + '\t<n>%s</n>\n' % numberToBase64(self.n)
-        s += indent + '\t<e>%s</e>\n' % numberToBase64(self.e)
+            s = indent+'<publicKey xmlns="http://trevp.net/rsa">\n'
+        s += indent+'\t<n>%s</n>\n' % numberToBase64(self.n)
+        s += indent+'\t<e>%s</e>\n' % numberToBase64(self.e)
         if self.d:
-            s += indent + '\t<d>%s</d>\n' % numberToBase64(self.d)
-            s += indent + '\t<p>%s</p>\n' % numberToBase64(self.p)
-            s += indent + '\t<q>%s</q>\n' % numberToBase64(self.q)
-            s += indent + '\t<dP>%s</dP>\n' % numberToBase64(self.dP)
-            s += indent + '\t<dQ>%s</dQ>\n' % numberToBase64(self.dQ)
-            s += indent + '\t<qInv>%s</qInv>\n' % numberToBase64(self.qInv)
-            s += indent + '</privateKey>'
+            s += indent+'\t<d>%s</d>\n' % numberToBase64(self.d)
+            s += indent+'\t<p>%s</p>\n' % numberToBase64(self.p)
+            s += indent+'\t<q>%s</q>\n' % numberToBase64(self.q)
+            s += indent+'\t<dP>%s</dP>\n' % numberToBase64(self.dP)
+            s += indent+'\t<dQ>%s</dQ>\n' % numberToBase64(self.dQ)
+            s += indent+'\t<qInv>%s</qInv>\n' % numberToBase64(self.qInv)
+            s += indent+'</privateKey>'
         else:
-            s += indent + '</publicKey>'
+            s += indent+'</publicKey>'
         #Only add \n if part of a larger structure
         if indent != '':
             s += '\n'
@@ -96,16 +95,16 @@ class Python_RSAKey(RSAKey):
 
     def generate(bits):
         key = Python_RSAKey()
-        p = getRandomPrime(bits / 2, False)
-        q = getRandomPrime(bits / 2, False)
-        t = lcm(p - 1, q - 1)
+        p = getRandomPrime(bits/2, False)
+        q = getRandomPrime(bits/2, False)
+        t = lcm(p-1, q-1)
         key.n = p * q
-        key.e = 3L  # Needed to be long, for Java
+        key.e = 3L  #Needed to be long, for Java
         key.d = invMod(key.e, t)
         key.p = p
         key.q = q
-        key.dP = key.d % (p - 1)
-        key.dQ = key.d % (q - 1)
+        key.dP = key.d % (p-1)
+        key.dQ = key.d % (q-1)
         key.qInv = invMod(q, p)
         return key
     generate = staticmethod(generate)
@@ -119,7 +118,7 @@ class Python_RSAKey(RSAKey):
             end = s.find("-----END PRIVATE KEY-----")
             if end == -1:
                 raise SyntaxError("Missing PEM Postfix")
-            s = s[start + len("-----BEGIN PRIVATE KEY -----"): end]
+            s = s[start+len("-----BEGIN PRIVATE KEY -----") : end]
             bytes = base64ToBytes(s)
             return Python_RSAKey._parsePKCS8(bytes)
         else:
@@ -128,7 +127,7 @@ class Python_RSAKey(RSAKey):
                 end = s.find("-----END RSA PRIVATE KEY-----")
                 if end == -1:
                     raise SyntaxError("Missing PEM Postfix")
-                s = s[start + len("-----BEGIN RSA PRIVATE KEY -----"): end]
+                s = s[start+len("-----BEGIN RSA PRIVATE KEY -----") : end]
                 bytes = base64ToBytes(s)
                 return Python_RSAKey._parseSSLeay(bytes)
         raise SyntaxError("Missing PEM Prefix")
@@ -190,10 +189,8 @@ class Python_RSAKey(RSAKey):
         xmltools.checkNoMoreAttributes(element)
 
         #Parse public values (<n> and <e>)
-        n = base64ToNumber(xmltools.getText(xmltools.getChild(
-            element, 0, "n"), xmltools.base64RegEx))
-        e = base64ToNumber(xmltools.getText(xmltools.getChild(
-            element, 1, "e"), xmltools.base64RegEx))
+        n = base64ToNumber(xmltools.getText(xmltools.getChild(element, 0, "n"), xmltools.base64RegEx))
+        e = base64ToNumber(xmltools.getText(xmltools.getChild(element, 1, "e"), xmltools.base64RegEx))
         d = 0
         p = 0
         q = 0
@@ -201,18 +198,12 @@ class Python_RSAKey(RSAKey):
         dQ = 0
         qInv = 0
         #Parse private values, if present
-        if element.childNodes.length >= 3:
-            d = base64ToNumber(xmltools.getText(xmltools.
-                getChild(element, 2, "d"), xmltools.base64RegEx))
-            p = base64ToNumber(xmltools.getText(xmltools.
-                getChild(element, 3, "p"), xmltools.base64RegEx))
-            q = base64ToNumber(xmltools.getText(xmltools.
-                getChild(element, 4, "q"), xmltools.base64RegEx))
-            dP = base64ToNumber(xmltools.getText(xmltools.
-                getChild(element, 5, "dP"), xmltools.base64RegEx))
-            dQ = base64ToNumber(xmltools.getText(xmltools.
-                getChild(element, 6, "dQ"), xmltools.base64RegEx))
-            qInv = base64ToNumber(xmltools.getText(xmltools.
-                getLastChild(element, 7, "qInv"), xmltools.base64RegEx))
+        if element.childNodes.length>=3:
+            d = base64ToNumber(xmltools.getText(xmltools.getChild(element, 2, "d"), xmltools.base64RegEx))
+            p = base64ToNumber(xmltools.getText(xmltools.getChild(element, 3, "p"), xmltools.base64RegEx))
+            q = base64ToNumber(xmltools.getText(xmltools.getChild(element, 4, "q"), xmltools.base64RegEx))
+            dP = base64ToNumber(xmltools.getText(xmltools.getChild(element, 5, "dP"), xmltools.base64RegEx))
+            dQ = base64ToNumber(xmltools.getText(xmltools.getChild(element, 6, "dQ"), xmltools.base64RegEx))
+            qInv = base64ToNumber(xmltools.getText(xmltools.getLastChild(element, 7, "qInv"), xmltools.base64RegEx))
         return Python_RSAKey(n, e, d, p, q, dP, dQ, qInv)
     _parseXML = staticmethod(_parseXML)

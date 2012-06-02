@@ -34,7 +34,7 @@ class X509:
             raise SyntaxError("Missing PEM prefix")
         if end == -1:
             raise SyntaxError("Missing PEM postfix")
-        s = s[start + len("-----BEGIN CERTIFICATE-----"): end]
+        s = s[start+len("-----BEGIN CERTIFICATE-----") : end]
 
         bytes = base64ToBytes(s)
         self.parseBinary(bytes)
@@ -58,13 +58,13 @@ class X509:
 
         #Is the optional version field present?
         #This determines which index the key is at.
-        if tbsCertificateP.value[0] == 0xA0:
+        if tbsCertificateP.value[0]==0xA0:
             subjectPublicKeyInfoIndex = 6
         else:
             subjectPublicKeyInfoIndex = 5
 
         #Get the subjectPublicKeyInfo
-        subjectPublicKeyInfoP = tbsCertificateP.getChild(
+        subjectPublicKeyInfoP = tbsCertificateP.getChild(\
                                     subjectPublicKeyInfoIndex)
 
         #Get the algorithm
@@ -77,7 +77,7 @@ class X509:
         subjectPublicKeyP = subjectPublicKeyInfoP.getChild(1)
 
         #Adjust for BIT STRING encapsulation
-        if (subjectPublicKeyP.value[0] != 0):
+        if (subjectPublicKeyP.value[0] !=0):
             raise SyntaxError()
         subjectPublicKeyP = ASN1Parser(subjectPublicKeyP.value[1:])
 
@@ -129,3 +129,5 @@ class X509:
 
     def writeBytes(self):
         return self.bytes
+
+

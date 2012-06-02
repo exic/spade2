@@ -6,7 +6,6 @@ from mathtls import *
 from Session import Session
 from BaseDB import BaseDB
 
-
 class SharedKeyDB(BaseDB):
     """This class represent an in-memory or on-disk database of shared
     keys.
@@ -48,9 +47,9 @@ class SharedKeyDB(BaseDB):
         BaseDB.__setitem__(self, username, sharedKey)
 
     def _setItem(self, username, value):
-        if len(username) > 16:
+        if len(username)>16:
             raise ValueError("username too long")
-        if len(value) >= 48:
+        if len(value)>=48:
             raise ValueError("shared key too long")
         return value
 

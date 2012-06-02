@@ -22,7 +22,6 @@ else:
         stream = java.io.ByteArrayInputStream(java.lang.String(s).getBytes())
         return builder.parse(stream)
 
-
 def parseAndStripWhitespace(s):
     try:
         element = parseDocument(s).documentElement
@@ -33,12 +32,10 @@ def parseAndStripWhitespace(s):
 
 #Goes through a DOM tree and removes whitespace besides child elements,
 #as long as this whitespace is correctly tab-ified
-
-
 def stripWhitespace(element, tab=0):
     element.normalize()
 
-    lastSpacer = "\n" + ("\t" * tab)
+    lastSpacer = "\n" + ("\t"*tab)
     spacer = lastSpacer + "\t"
 
     #Zero children aren't allowed (i.e. <empty/>)
@@ -47,7 +44,7 @@ def stripWhitespace(element, tab=0):
         raise SyntaxError("Empty XML elements not allowed")
 
     #If there's a single child, it must be text context
-    if element.childNodes.length == 1:
+    if element.childNodes.length==1:
         if element.firstChild.nodeType == element.firstChild.TEXT_NODE:
             #If it's an empty element, remove
             if element.firstChild.data == lastSpacer:
@@ -63,16 +60,14 @@ def stripWhitespace(element, tab=0):
     child = element.firstChild
     while child:
         if child.nodeType == child.ELEMENT_NODE:
-            stripWhitespace(child, tab + 1)
+            stripWhitespace(child, tab+1)
             child = child.nextSibling
         elif child.nodeType == child.TEXT_NODE:
             if child == element.lastChild:
                 if child.data != lastSpacer:
-                    raise SyntaxError(
-                        "Bad whitespace under '%s'" % element.tagName)
+                    raise SyntaxError("Bad whitespace under '%s'" % element.tagName)
             elif child.data != spacer:
-                raise SyntaxError(
-                    "Bad whitespace under '%s'" % element.tagName)
+                raise SyntaxError("Bad whitespace under '%s'" % element.tagName)
             next = child.nextSibling
             element.removeChild(child)
             child = next
@@ -88,9 +83,7 @@ def checkName(element, name):
         return
 
     if element.tagName != name:
-        raise SyntaxError(
-            "Wrong element name: should be '%s', is '%s'" % (name, element.tagName))
-
+        raise SyntaxError("Wrong element name: should be '%s', is '%s'" % (name, element.tagName))
 
 def getChild(element, index, name=None):
     if element.nodeType != element.ELEMENT_NODE:
@@ -101,7 +94,6 @@ def getChild(element, index, name=None):
         raise SyntaxError("Missing child: '%s'" % name)
     checkName(child, name)
     return child
-
 
 def getChildIter(element, index):
     class ChildIter:
@@ -119,17 +111,14 @@ def getChildIter(element, index):
 
         def checkEnd(self):
             if self.index != len(self.element.childNodes):
-                raise SyntaxError(
-                    "Too many elements under: '%s'" % self.element.tagName)
+                raise SyntaxError("Too many elements under: '%s'" % self.element.tagName)
     return ChildIter(element, index)
-
 
 def getChildOrNone(element, index):
     if element.nodeType != element.ELEMENT_NODE:
         raise SyntaxError("Wrong node type in getChild()")
     child = element.childNodes.item(index)
     return child
-
 
 def getLastChild(element, index, name=None):
     if element.nodeType != element.ELEMENT_NODE:
@@ -155,9 +144,8 @@ keysListRegEx = "(A)?(B)?(C)?(D)?(E)?(F)?(G)?(H)?(I)?(J)?(K)?(L)?(M)?(N)?(O)?(P)
 dateTimeRegEx = "\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ\Z"
 shortStringRegEx = ".{1,100}\Z"
 exprRegEx = "[a-zA-Z0-9 ,()]{1,200}\Z"
-notAfterDeltaRegEx = "0|([1-9][0-9]{0,8})\Z"  # A number from 0 to (1 billion)-1
+notAfterDeltaRegEx = "0|([1-9][0-9]{0,8})\Z" #A number from 0 to (1 billion)-1
 booleanRegEx = "(true)|(false)"
-
 
 def getReqAttribute(element, attrName, regEx=""):
     if element.nodeType != element.ELEMENT_NODE:
@@ -167,11 +155,9 @@ def getReqAttribute(element, attrName, regEx=""):
     if not value:
         raise SyntaxError("Missing Attribute: " + attrName)
     if not re.match(regEx, value):
-        raise SyntaxError("Bad Attribute Value for '%s': '%s' " % (
-            attrName, value))
+        raise SyntaxError("Bad Attribute Value for '%s': '%s' " % (attrName, value))
     element.removeAttribute(attrName)
-    return str(value)  # de-unicode it; this is needed for bsddb, for example
-
+    return str(value) #de-unicode it; this is needed for bsddb, for example
 
 def getAttribute(element, attrName, regEx=""):
     if element.nodeType != element.ELEMENT_NODE:
@@ -180,19 +166,16 @@ def getAttribute(element, attrName, regEx=""):
     value = element.getAttribute(attrName)
     if value:
         if not re.match(regEx, value):
-            raise SyntaxError(
-                "Bad Attribute Value for '%s': '%s' " % (attrName, value))
+            raise SyntaxError("Bad Attribute Value for '%s': '%s' " % (attrName, value))
         element.removeAttribute(attrName)
-        return str(value)  # de-unicode it; this is needed for bsddb, for example
-
+        return str(value) #de-unicode it; this is needed for bsddb, for example
 
 def checkNoMoreAttributes(element):
     if element.nodeType != element.ELEMENT_NODE:
         raise SyntaxError("Wrong node type in checkNoMoreAttributes()")
 
-    if element.attributes.length != 0:
+    if element.attributes.length!=0:
         raise SyntaxError("Extra attributes on '%s'" % element.tagName)
-
 
 def getText(element, regEx=""):
     textNode = element.firstChild
@@ -201,22 +184,18 @@ def getText(element, regEx=""):
     if textNode.nodeType != textNode.TEXT_NODE:
         raise SyntaxError("Non-text node: '%s'" % element.tagName)
     if not re.match(regEx, textNode.data):
-        raise SyntaxError("Bad Text Value for '%s': '%s' " % (
-            element.tagName, textNode.data))
+        raise SyntaxError("Bad Text Value for '%s': '%s' " % (element.tagName, textNode.data))
     return str(textNode.data) #de-unicode it; this is needed for bsddb, for example
 
 #Function for adding tabs to a string
-
-
 def indent(s, steps, ch="\t"):
-    tabs = ch * steps
+    tabs = ch*steps
     if s[-1] != "\n":
-        s = tabs + s.replace("\n", "\n" + tabs)
+        s = tabs + s.replace("\n", "\n"+tabs)
     else:
-        s = tabs + s.replace("\n", "\n" + tabs)
-        s = s[: -len(tabs)]
+        s = tabs + s.replace("\n", "\n"+tabs)
+        s = s[ : -len(tabs)]
     return s
-
 
 def escape(s):
     return saxutils.escape(s)

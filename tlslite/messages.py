@@ -10,11 +10,10 @@ from X509CertChain import X509CertChain
 
 import hashlib
 
-
 class RecordHeader3:
     def __init__(self):
         self.type = 0
-        self.version = (0, 0)
+        self.version = (0,0)
         self.length = 0
         self.ssl2 = False
 
@@ -39,19 +38,18 @@ class RecordHeader3:
         self.ssl2 = False
         return self
 
-
 class RecordHeader2:
     def __init__(self):
         self.type = 0
-        self.version = (0, 0)
+        self.version = (0,0)
         self.length = 0
         self.ssl2 = True
 
     def parse(self, p):
-        if p.get(1) != 128:
+        if p.get(1)!=128:
             raise SyntaxError()
         self.type = ContentType.handshake
-        self.version = (2, 0)
+        self.version = (2,0)
         #We don't support 2-byte-length-headers; could be a problem
         self.length = p.get(1)
         return self
@@ -71,7 +69,6 @@ class Msg:
             return w.index
         else:
             return w.bytes
-
 
 class Alert(Msg):
     def __init__(self):
@@ -108,7 +105,7 @@ class HandshakeMsg(Msg):
             length = self.write(True)
             w = Writer(length)
             w.add(handshakeType, 1)
-            w.add(length - 4, 3)
+            w.add(length-4, 3)
         return w
 
 
@@ -116,7 +113,7 @@ class ClientHello(HandshakeMsg):
     def __init__(self, ssl2=False):
         self.contentType = ContentType.handshake
         self.ssl2 = ssl2
-        self.client_version = (0, 0)
+        self.client_version = (0,0)
         self.random = createByteArrayZeros(32)
         self.session_id = createByteArraySequence([])
         self.cipher_suites = []         # a list of 16-bit values
@@ -141,13 +138,13 @@ class ClientHello(HandshakeMsg):
             cipherSpecsLength = p.get(2)
             sessionIDLength = p.get(2)
             randomLength = p.get(2)
-            self.cipher_suites = p.getFixList(3, int(cipherSpecsLength / 3))
+            self.cipher_suites = p.getFixList(3, int(cipherSpecsLength/3))
             self.session_id = p.getFixBytes(sessionIDLength)
             self.random = p.getFixBytes(randomLength)
             if len(self.random) < 32:
-                zeroBytes = 32 - len(self.random)
+                zeroBytes = 32-len(self.random)
                 self.random = createByteArrayZeros(zeroBytes) + self.random
-            self.compression_methods = [0]  # Fake this value
+            self.compression_methods = [0]#Fake this value
 
             #We're not doing a stopLengthCheck() for SSLv2, oh well..
         else:
@@ -194,11 +191,11 @@ class ClientHello(HandshakeMsg):
         if self.certificate_types and self.certificate_types != \
                 [CertificateType.x509]:
             w.add(7, 2)
-            w.add(len(self.certificate_types) + 1, 2)
+            w.add(len(self.certificate_types)+1, 2)
             w.addVarSeq(self.certificate_types, 1, 1)
         if self.srp_username:
             w.add(6, 2)
-            w.add(len(self.srp_username) + 1, 2)
+            w.add(len(self.srp_username)+1, 2)
             w.addVarSeq(stringToBytes(self.srp_username), 1, 1)
 
         return HandshakeMsg.postWrite(self, w, trial)
@@ -207,7 +204,7 @@ class ClientHello(HandshakeMsg):
 class ServerHello(HandshakeMsg):
     def __init__(self):
         self.contentType = ContentType.handshake
-        self.server_version = (0, 0)
+        self.server_version = (0,0)
         self.random = createByteArrayZeros(32)
         self.session_id = createByteArraySequence([])
         self.cipher_suite = 0
@@ -270,7 +267,6 @@ class ServerHello(HandshakeMsg):
 
         return HandshakeMsg.postWrite(self, w, trial)
 
-
 class Certificate(HandshakeMsg):
     def __init__(self, certificateType):
         self.certificateType = certificateType
@@ -292,7 +288,7 @@ class Certificate(HandshakeMsg):
                 x509 = X509()
                 x509.parseBinary(certBytes)
                 certificate_list.append(x509)
-                index += len(certBytes) + 3
+                index += len(certBytes)+3
             if certificate_list:
                 self.certChain = X509CertChain(certificate_list)
         elif self.certificateType == CertificateType.cryptoID:
@@ -301,7 +297,7 @@ class Certificate(HandshakeMsg):
                 try:
                     import cryptoIDlib.CertChain
                 except ImportError:
-                    raise SyntaxError(
+                    raise SyntaxError(\
                     "cryptoID cert chain received, cryptoIDlib not present")
                 self.certChain = cryptoIDlib.CertChain.CertChain().parse(s)
         else:
@@ -321,7 +317,7 @@ class Certificate(HandshakeMsg):
             #determine length
             for cert in certificate_list:
                 bytes = cert.writeBytes()
-                chainLength += len(bytes) + 3
+                chainLength += len(bytes)+3
             #add bytes
             w.add(chainLength, 3)
             for cert in certificate_list:
@@ -336,7 +332,6 @@ class Certificate(HandshakeMsg):
         else:
             raise AssertionError()
         return HandshakeMsg.postWrite(self, w, trial)
-
 
 class CertificateRequest(HandshakeMsg):
     def __init__(self):
@@ -363,7 +358,6 @@ class CertificateRequest(HandshakeMsg):
         w.addVarSeq(self.certificate_types, 1, 1)
         w.addVarSeq(self.certificate_authorities, 1, 2)
         return HandshakeMsg.postWrite(self, w, trial)
-
 
 class ServerKeyExchange(HandshakeMsg):
     def __init__(self, cipherSuite):
@@ -414,7 +408,6 @@ class ServerKeyExchange(HandshakeMsg):
         finally:
             self.cipherSuite = oldCipherSuite
 
-
 class ServerHelloDone(HandshakeMsg):
     def __init__(self):
         self.contentType = ContentType.handshake
@@ -430,7 +423,6 @@ class ServerHelloDone(HandshakeMsg):
     def write(self, trial=False):
         w = HandshakeMsg.preWrite(self, HandshakeType.server_hello_done, trial)
         return HandshakeMsg.postWrite(self, w, trial)
-
 
 class ClientKeyExchange(HandshakeMsg):
     def __init__(self, cipherSuite, version=None):
@@ -454,11 +446,11 @@ class ClientKeyExchange(HandshakeMsg):
                                CipherSuite.srpRsaSuites:
             self.srp_A = bytesToNumber(p.getVarBytes(2))
         elif self.cipherSuite in CipherSuite.rsaSuites:
-            if self.version in ((3, 1), (3, 2)):
+            if self.version in ((3,1), (3,2)):
                 self.encryptedPreMasterSecret = p.getVarBytes(2)
-            elif self.version == (3, 0):
+            elif self.version == (3,0):
                 self.encryptedPreMasterSecret = \
-                    p.getFixBytes(len(p.bytes) - p.index)
+                    p.getFixBytes(len(p.bytes)-p.index)
             else:
                 raise AssertionError()
         else:
@@ -473,16 +465,15 @@ class ClientKeyExchange(HandshakeMsg):
                                CipherSuite.srpRsaSuites:
             w.addVarSeq(numberToBytes(self.srp_A), 1, 2)
         elif self.cipherSuite in CipherSuite.rsaSuites:
-            if self.version in ((3, 1), (3, 2)):
+            if self.version in ((3,1), (3,2)):
                 w.addVarSeq(self.encryptedPreMasterSecret, 1, 2)
-            elif self.version == (3, 0):
+            elif self.version == (3,0):
                 w.addFixSeq(self.encryptedPreMasterSecret, 1)
             else:
                 raise AssertionError()
         else:
             raise AssertionError()
         return HandshakeMsg.postWrite(self, w, trial)
-
 
 class CertificateVerify(HandshakeMsg):
     def __init__(self):
@@ -505,7 +496,6 @@ class CertificateVerify(HandshakeMsg):
         w.addVarSeq(self.signature, 1, 2)
         return HandshakeMsg.postWrite(self, w, trial)
 
-
 class ChangeCipherSpec(Msg):
     def __init__(self):
         self.contentType = ContentType.change_cipher_spec
@@ -523,7 +513,7 @@ class ChangeCipherSpec(Msg):
 
     def write(self, trial=False):
         w = Msg.preWrite(self, trial)
-        w.add(self.type, 1)
+        w.add(self.type,1)
         return Msg.postWrite(self, w, trial)
 
 
@@ -539,9 +529,9 @@ class Finished(HandshakeMsg):
 
     def parse(self, p):
         p.startLengthCheck(3)
-        if self.version == (3, 0):
+        if self.version == (3,0):
             self.verify_data = p.getFixBytes(36)
-        elif self.version in ((3, 1), (3, 2)):
+        elif self.version in ((3,1), (3,2)):
             self.verify_data = p.getFixBytes(12)
         else:
             raise AssertionError()
@@ -552,7 +542,6 @@ class Finished(HandshakeMsg):
         w = HandshakeMsg.preWrite(self, HandshakeType.finished, trial)
         w.addFixSeq(self.verify_data, 1)
         return HandshakeMsg.postWrite(self, w, trial)
-
 
 class ApplicationData(Msg):
     def __init__(self):

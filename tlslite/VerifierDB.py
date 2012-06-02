@@ -5,7 +5,6 @@ from utils.compat import *
 import mathtls
 from BaseDB import BaseDB
 
-
 class VerifierDB(BaseDB):
     """This class represent an in-memory or on-disk database of SRP
     password verifiers.
@@ -49,15 +48,16 @@ class VerifierDB(BaseDB):
         """
         BaseDB.__setitem__(self, username, verifierEntry)
 
+
     def _setItem(self, username, value):
-        if len(username) >= 256:
+        if len(username)>=256:
             raise ValueError("username too long")
         N, g, salt, verifier = value
         N = numberToBase64(N)
         g = numberToBase64(g)
         salt = stringToBase64(salt)
         verifier = numberToBase64(verifier)
-        valueStr = " ".join((N, g, salt, verifier))
+        valueStr = " ".join( (N, g, salt, verifier)  )
         return valueStr
 
     def _checkItem(self, value, username, param):
@@ -65,6 +65,7 @@ class VerifierDB(BaseDB):
         x = mathtls.makeX(salt, username, param)
         v = powMod(g, x, N)
         return (verifier == v)
+
 
     def makeVerifier(username, password, bits):
         """Create a verifier entry which can be stored in a VerifierDB.

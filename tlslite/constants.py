@@ -1,11 +1,9 @@
 """Constants used in various places."""
 
-
 class CertificateType:
     x509 = 0
     openpgp = 1
     cryptoID = 2
-
 
 class HandshakeType:
     hello_request = 0
@@ -19,19 +17,16 @@ class HandshakeType:
     client_key_exchange = 16
     finished = 20
 
-
 class ContentType:
     change_cipher_spec = 20
     alert = 21
     handshake = 22
     application_data = 23
-    all = (20, 21, 22, 23)
-
+    all = (20,21,22,23)
 
 class AlertLevel:
     warning = 1
     fatal = 2
-
 
 class AlertDescription:
     """
@@ -70,7 +65,7 @@ class AlertDescription:
     record_overflow = 22
     decompression_failure = 30
     handshake_failure = 40
-    no_certificate = 41  # SSLv3
+    no_certificate = 41 #SSLv3
     bad_certificate = 42
     unsupported_certificate = 43
     certificate_revoked = 44
@@ -91,9 +86,8 @@ class AlertDescription:
     missing_srp_username = 121
     untrusted_srp_parameters = 122
 
-
 class CipherSuite:
-    TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA = 0x0050
+    TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA  = 0x0050
     TLS_SRP_SHA_WITH_AES_128_CBC_SHA = 0x0053
     TLS_SRP_SHA_WITH_AES_256_CBC_SHA = 0x0056
 
@@ -110,7 +104,6 @@ class CipherSuite:
     srpSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
     srpSuites.append(TLS_SRP_SHA_WITH_AES_128_CBC_SHA)
     srpSuites.append(TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
-
     def getSrpSuites(ciphers):
         suites = []
         for cipher in ciphers:
@@ -127,7 +120,6 @@ class CipherSuite:
     srpRsaSuites.append(TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA)
     srpRsaSuites.append(TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA)
     srpRsaSuites.append(TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA)
-
     def getSrpRsaSuites(ciphers):
         suites = []
         for cipher in ciphers:
@@ -136,8 +128,7 @@ class CipherSuite:
             elif cipher == "aes256":
                 suites.append(CipherSuite.TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA)
             elif cipher == "3des":
-                suites.append(CipherSuite.
-                    TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA)
+                suites.append(CipherSuite.TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA)
         return suites
     getSrpRsaSuites = staticmethod(getSrpRsaSuites)
 
@@ -146,7 +137,6 @@ class CipherSuite:
     rsaSuites.append(TLS_RSA_WITH_AES_128_CBC_SHA)
     rsaSuites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
     rsaSuites.append(TLS_RSA_WITH_RC4_128_SHA)
-
     def getRsaSuites(ciphers):
         suites = []
         for cipher in ciphers:
@@ -184,52 +174,52 @@ class Fault:
     badUsername = 101
     badPassword = 102
     badA = 103
-    clientSrpFaults = range(101, 104)
+    clientSrpFaults = range(101,104)
 
     badVerifyMessage = 601
-    clientCertFaults = range(601, 602)
+    clientCertFaults = range(601,602)
 
     badPremasterPadding = 501
     shortPremasterSecret = 502
-    clientNoAuthFaults = range(501, 503)
+    clientNoAuthFaults = range(501,503)
 
     badIdentifier = 401
     badSharedKey = 402
-    clientSharedKeyFaults = range(401, 403)
+    clientSharedKeyFaults = range(401,403)
 
     badB = 201
-    serverFaults = range(201, 202)
+    serverFaults = range(201,202)
 
     badFinished = 300
     badMAC = 301
     badPadding = 302
-    genericFaults = range(300, 303)
+    genericFaults = range(300,303)
 
-    faultAlerts = {
-        badUsername: (AlertDescription.unknown_srp_username,
-                      AlertDescription.bad_record_mac),
-        badPassword: (AlertDescription.bad_record_mac,),
-        badA: (AlertDescription.illegal_parameter,),
-        badIdentifier: (AlertDescription.handshake_failure,),
-        badSharedKey: (AlertDescription.bad_record_mac,),
-        badPremasterPadding: (AlertDescription.bad_record_mac,),
-        shortPremasterSecret: (AlertDescription.bad_record_mac,),
-        badVerifyMessage: (AlertDescription.decrypt_error,),
-        badFinished: (AlertDescription.decrypt_error,),
-        badMAC: (AlertDescription.bad_record_mac,),
+    faultAlerts = {\
+        badUsername: (AlertDescription.unknown_srp_username, \
+                      AlertDescription.bad_record_mac),\
+        badPassword: (AlertDescription.bad_record_mac,),\
+        badA: (AlertDescription.illegal_parameter,),\
+        badIdentifier: (AlertDescription.handshake_failure,),\
+        badSharedKey: (AlertDescription.bad_record_mac,),\
+        badPremasterPadding: (AlertDescription.bad_record_mac,),\
+        shortPremasterSecret: (AlertDescription.bad_record_mac,),\
+        badVerifyMessage: (AlertDescription.decrypt_error,),\
+        badFinished: (AlertDescription.decrypt_error,),\
+        badMAC: (AlertDescription.bad_record_mac,),\
         badPadding: (AlertDescription.bad_record_mac,)
         }
 
-    faultNames = {
-        badUsername: "bad username",
-        badPassword: "bad password",
-        badA: "bad A",
-        badIdentifier: "bad identifier",
-        badSharedKey: "bad sharedkey",
-        badPremasterPadding: "bad premaster padding",
-        shortPremasterSecret: "short premaster secret",
-        badVerifyMessage: "bad verify message",
-        badFinished: "bad finished message",
-        badMAC: "bad MAC",
+    faultNames = {\
+        badUsername: "bad username",\
+        badPassword: "bad password",\
+        badA: "bad A",\
+        badIdentifier: "bad identifier",\
+        badSharedKey: "bad sharedkey",\
+        badPremasterPadding: "bad premaster padding",\
+        shortPremasterSecret: "short premaster secret",\
+        badVerifyMessage: "bad verify message",\
+        badFinished: "bad finished message",\
+        badMAC: "bad MAC",\
         badPadding: "bad padding"
         }

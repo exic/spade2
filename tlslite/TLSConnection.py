@@ -40,6 +40,7 @@ class TLSConnection(TLSRecordLayer):
     L{tlslite.integration.TLSTwistedProtocolWrapper.TLSTwistedProtocolWrapper}).
     """
 
+
     def __init__(self, sock):
         """Create a new TLSConnection instance.
 
@@ -368,6 +369,7 @@ class TLSConnection(TLSRecordLayer):
         for result in self._handshakeWrapperAsync(handshaker, checker):
             yield result
 
+
     def _handshakeClientAsyncHelper(self, srpParams, certParams, unknownParams,
                                sharedKeyParams, session, settings, recursive):
         if not recursive:
@@ -413,7 +415,7 @@ class TLSConnection(TLSRecordLayer):
                 import cryptoIDlib.CertChain
                 if isinstance(clientCertChain, cryptoIDlib.CertChain.CertChain):
                     if "cryptoID" not in settings.certificateTypes:
-                        raise ValueError("Client certificate doesn't "
+                        raise ValueError("Client certificate doesn't "\
                                          "match Handshake Settings")
                     settings.certificateTypes = ["cryptoID"]
                     foundType = True
@@ -422,16 +424,17 @@ class TLSConnection(TLSRecordLayer):
             if not foundType and isinstance(clientCertChain,
                                             X509CertChain):
                 if "x509" not in settings.certificateTypes:
-                    raise ValueError("Client certificate doesn't match "
+                    raise ValueError("Client certificate doesn't match "\
                                      "Handshake Settings")
                 settings.certificateTypes = ["x509"]
                 foundType = True
             if not foundType:
                 raise ValueError("Unrecognized certificate type")
 
+
         if session:
             if not session.valid():
-                session = None  # ignore non-resumable sessions...
+                session = None #ignore non-resumable sessions...
             elif session.resumable and \
                     (session.srpUsername != srpUsername):
                 raise ValueError("Session username doesn't match")
@@ -450,6 +453,7 @@ class TLSConnection(TLSRecordLayer):
             elif self.fault == Fault.badSharedKey:
                 sharedKey += "GARBAGE"
                 session = Session()._createSharedKey(identifier, sharedKey)
+
 
         #Initialize locals
         serverCertChain = None
@@ -493,7 +497,7 @@ class TLSConnection(TLSRecordLayer):
             #ciphersuite must be one of the acceptable ciphersuites
             if (not sharedKeyParams) and \
                 session.cipherSuite not in cipherSuites:
-                raise ValueError("Session's cipher suite not consistent "
+                raise ValueError("Session's cipher suite not consistent "\
                                  "with parameters")
             else:
                 clientHello = ClientHello()
@@ -514,7 +518,7 @@ class TLSConnection(TLSRecordLayer):
         for result in self._getMsg((ContentType.handshake,
                                   ContentType.alert),
                                   HandshakeType.server_hello):
-            if result in (0, 1):
+            if result in (0,1):
                 yield result
             else:
                 break
@@ -533,7 +537,7 @@ class TLSConnection(TLSRecordLayer):
             #If we're not in SRP callback mode, we won't have offered SRP
             #without a username, so we shouldn't get this alert
             if not srpCallback:
-                for result in self._sendError(
+                for result in self._sendError(\
                                 AlertDescription.unexpected_message):
                     yield result
             srpParams = srpCallback()
@@ -557,27 +561,27 @@ class TLSConnection(TLSRecordLayer):
 
         #Check ServerHello
         if serverHello.server_version < settings.minVersion:
-            for result in self._sendError(
+            for result in self._sendError(\
                 AlertDescription.protocol_version,
                 "Too old version: %s" % str(serverHello.server_version)):
                 yield result
         if serverHello.server_version > settings.maxVersion:
-            for result in self._sendError(
+            for result in self._sendError(\
                 AlertDescription.protocol_version,
                 "Too new version: %s" % str(serverHello.server_version)):
                 yield result
         if serverHello.cipher_suite not in cipherSuites:
-            for result in self._sendError(
+            for result in self._sendError(\
                 AlertDescription.illegal_parameter,
                 "Server responded with incorrect ciphersuite"):
                 yield result
         if serverHello.certificate_type not in certificateTypes:
-            for result in self._sendError(
+            for result in self._sendError(\
                 AlertDescription.illegal_parameter,
                 "Server responded with incorrect certificate type"):
                 yield result
         if serverHello.compression_method != 0:
-            for result in self._sendError(
+            for result in self._sendError(\
                 AlertDescription.illegal_parameter,
                 "Server responded with incorrect compression method"):
                 yield result
@@ -594,8 +598,8 @@ class TLSConnection(TLSRecordLayer):
             if sharedKeyParams:
                 session.cipherSuite = serverHello.cipher_suite
             elif serverHello.cipher_suite != session.cipherSuite:
-                for result in self._sendError(
-                    AlertDescription.illegal_parameter,
+                for result in self._sendError(\
+                    AlertDescription.illegal_parameter,\
                     "Server's ciphersuite doesn't match session"):
                     yield result
 
@@ -619,7 +623,7 @@ class TLSConnection(TLSRecordLayer):
         else:
 
             if sharedKeyParams:
-                for result in self._sendError(
+                for result in self._sendError(\
                         AlertDescription.user_canceled,
                         "Was expecting a shared-key resumption"):
                     yield result
@@ -633,7 +637,7 @@ class TLSConnection(TLSRecordLayer):
                 #Get ServerKeyExchange, ServerHelloDone
                 for result in self._getMsg(ContentType.handshake,
                         HandshakeType.server_key_exchange, cipherSuite):
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                     else:
                         break
@@ -641,7 +645,7 @@ class TLSConnection(TLSRecordLayer):
 
                 for result in self._getMsg(ContentType.handshake,
                         HandshakeType.server_hello_done):
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                     else:
                         break
@@ -652,7 +656,7 @@ class TLSConnection(TLSRecordLayer):
                 #Get Certificate, ServerKeyExchange, ServerHelloDone
                 for result in self._getMsg(ContentType.handshake,
                         HandshakeType.certificate, certificateType):
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                     else:
                         break
@@ -660,7 +664,7 @@ class TLSConnection(TLSRecordLayer):
 
                 for result in self._getMsg(ContentType.handshake,
                         HandshakeType.server_key_exchange, cipherSuite):
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                     else:
                         break
@@ -668,7 +672,7 @@ class TLSConnection(TLSRecordLayer):
 
                 for result in self._getMsg(ContentType.handshake,
                         HandshakeType.server_hello_done):
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                     else:
                         break
@@ -679,7 +683,7 @@ class TLSConnection(TLSRecordLayer):
                 #Get Certificate[, CertificateRequest], ServerHelloDone
                 for result in self._getMsg(ContentType.handshake,
                         HandshakeType.certificate, certificateType):
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                     else:
                         break
@@ -688,7 +692,7 @@ class TLSConnection(TLSRecordLayer):
                 for result in self._getMsg(ContentType.handshake,
                         (HandshakeType.server_hello_done,
                         HandshakeType.certificate_request)):
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                     else:
                         break
@@ -699,7 +703,7 @@ class TLSConnection(TLSRecordLayer):
                     certificateRequest = msg
                     for result in self._getMsg(ContentType.handshake,
                             HandshakeType.server_hello_done):
-                        if result in (0, 1):
+                        if result in (0,1):
                             yield result
                         else:
                             break
@@ -708,6 +712,7 @@ class TLSConnection(TLSRecordLayer):
                     serverHelloDone = msg
             else:
                 raise AssertionError()
+
 
             #Calculate SRP premaster secret, if server chose an SRP or
             #SRP+RSA suite
@@ -719,23 +724,23 @@ class TLSConnection(TLSRecordLayer):
                 s = serverKeyExchange.srp_s
                 B = serverKeyExchange.srp_B
 
-                if (g, N) not in goodGroupParameters:
-                    for result in self._sendError(
+                if (g,N) not in goodGroupParameters:
+                    for result in self._sendError(\
                             AlertDescription.untrusted_srp_parameters,
                             "Unknown group parameters"):
                         yield result
                 if numBits(N) < settings.minKeySize:
-                    for result in self._sendError(
+                    for result in self._sendError(\
                             AlertDescription.untrusted_srp_parameters,
                             "N value is too small: %d" % numBits(N)):
                         yield result
                 if numBits(N) > settings.maxKeySize:
-                    for result in self._sendError(
+                    for result in self._sendError(\
                             AlertDescription.untrusted_srp_parameters,
                             "N value is too large: %d" % numBits(N)):
                         yield result
                 if B % N == 0:
-                    for result in self._sendError(
+                    for result in self._sendError(\
                             AlertDescription.illegal_parameter,
                             "Suspicious B value"):
                         yield result
@@ -750,16 +755,16 @@ class TLSConnection(TLSRecordLayer):
                     #Extract signature bytes from ServerKeyExchange
                     sigBytes = serverKeyExchange.signature
                     if len(sigBytes) == 0:
-                        for result in self._sendError(
+                        for result in self._sendError(\
                                 AlertDescription.illegal_parameter,
-                                "Server sent an SRP ServerKeyExchange "
+                                "Server sent an SRP ServerKeyExchange "\
                                 "message without a signature"):
                             yield result
 
                     #Get server's public key from the Certificate message
                     for result in self._getKeyFromChain(serverCertificate,
                                                        settings):
-                        if result in (0, 1):
+                        if result in (0,1):
                             yield result
                         else:
                             break
@@ -767,10 +772,11 @@ class TLSConnection(TLSRecordLayer):
 
                     #Verify signature
                     if not publicKey.verify(sigBytes, hashBytes):
-                        for result in self._sendError(
+                        for result in self._sendError(\
                                 AlertDescription.decrypt_error,
                                 "Signature failed to verify"):
                             yield result
+
 
                 #Calculate client's ephemeral DH values (a, A)
                 a = bytesToNumber(getRandomBytes(32))
@@ -785,7 +791,7 @@ class TLSConnection(TLSRecordLayer):
 
                 #Calculate premaster secret
                 k = makeK(N, g)
-                S = powMod((B - (k * v)) % N, a + (u * x), N)
+                S = powMod((B - (k*v)) % N, a+(u*x), N)
 
                 if self.fault == Fault.badA:
                     A = N
@@ -793,9 +799,10 @@ class TLSConnection(TLSRecordLayer):
                 premasterSecret = numberToBytes(S)
 
                 #Send ClientKeyExchange
-                for result in self._sendMsg(
+                for result in self._sendMsg(\
                         ClientKeyExchange(cipherSuite).createSRP(A)):
                     yield result
+
 
             #Calculate RSA premaster secret, if server chose an RSA suite
             elif cipherSuite in CipherSuite.rsaSuites:
@@ -810,11 +817,12 @@ class TLSConnection(TLSRecordLayer):
                 #Get server's public key from the Certificate message
                 for result in self._getKeyFromChain(serverCertificate,
                                                    settings):
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                     else:
                         break
                 publicKey, serverCertChain = result
+
 
                 #Calculate premaster secret
                 premasterSecret = getRandomBytes(48)
@@ -846,7 +854,7 @@ class TLSConnection(TLSRecordLayer):
                                               cryptoIDlib.CertChain.CertChain):
                                 wrongType = True
                         if wrongType:
-                            for result in self._sendError(
+                            for result in self._sendError(\
                                     AlertDescription.handshake_failure,
                                     "Client certificate is of wrong type"):
                                 yield result
@@ -872,7 +880,7 @@ class TLSConnection(TLSRecordLayer):
                 #If client authentication was requested and we have a
                 #private key, send CertificateVerify
                 if certificateRequest and privateKey:
-                    if self.version == (3, 0):
+                    if self.version == (3,0):
                         #Create a temporary session object, just for the
                         #purpose of creating the CertificateVerify
                         session = Session()
@@ -880,19 +888,20 @@ class TLSConnection(TLSRecordLayer):
                                                  premasterSecret,
                                                  clientRandom,
                                                  serverRandom)
-                        verifyBytes = self._calcSSLHandshakeHash(
+                        verifyBytes = self._calcSSLHandshakeHash(\
                                           session.masterSecret, "")
-                    elif self.version in ((3, 1), (3, 2)):
-                        verifyBytes = stringToBytes(
-                            self._handshake_md5.digest() +
+                    elif self.version in ((3,1), (3,2)):
+                        verifyBytes = stringToBytes(\
+                            self._handshake_md5.digest() + \
                             self._handshake_sha.digest())
                     if self.fault == Fault.badVerifyMessage:
-                        verifyBytes[0] = ((verifyBytes[0] + 1) % 256)
+                        verifyBytes[0] = ((verifyBytes[0]+1) % 256)
                     signedBytes = privateKey.sign(verifyBytes)
                     certificateVerify = CertificateVerify()
                     certificateVerify.create(signedBytes)
                     for result in self._sendMsg(certificateVerify):
                         yield result
+
 
             #Create the session object
             self.session = Session()
@@ -917,6 +926,8 @@ class TLSConnection(TLSRecordLayer):
             #Mark the connection as open
             self.session._setResumable(True)
             self._handshakeDone(resumed=False)
+
+
 
     def handshakeServer(self, sharedKeyDB=None, verifierDB=None,
                         certChain=None, privateKey=None, reqCert=False,
@@ -998,6 +1009,7 @@ class TLSConnection(TLSRecordLayer):
                 checker):
             pass
 
+
     def handshakeServerAsync(self, sharedKeyDB=None, verifierDB=None,
                              certChain=None, privateKey=None, reqCert=False,
                              sessionCache=None, settings=None, checker=None):
@@ -1012,13 +1024,14 @@ class TLSConnection(TLSRecordLayer):
         @rtype: iterable
         @return: A generator; see above for details.
         """
-        handshaker = self._handshakeServerAsyncHelper(
+        handshaker = self._handshakeServerAsyncHelper(\
             sharedKeyDB=sharedKeyDB,
             verifierDB=verifierDB, certChain=certChain,
             privateKey=privateKey, reqCert=reqCert,
             sessionCache=sessionCache, settings=settings)
         for result in self._handshakeWrapperAsync(handshaker, checker):
             yield result
+
 
     def _handshakeServerAsyncHelper(self, sharedKeyDB, verifierDB,
                              certChain, privateKey, reqCert, sessionCache,
@@ -1063,7 +1076,7 @@ class TLSConnection(TLSRecordLayer):
 
         #Initialize locals
         clientCertChain = None
-        serverCertChain = None  # We may set certChain to this later
+        serverCertChain = None #We may set certChain to this later
         postFinishedError = None
 
         #Tentatively set version to most-desirable version, so if an error
@@ -1074,7 +1087,7 @@ class TLSConnection(TLSRecordLayer):
         #Get ClientHello
         for result in self._getMsg(ContentType.handshake,
                                    HandshakeType.client_hello):
-            if result in (0, 1):
+            if result in (0,1):
                 yield result
             else:
                 break
@@ -1083,7 +1096,7 @@ class TLSConnection(TLSRecordLayer):
         #If client's version is too low, reject it
         if clientHello.client_version < settings.minVersion:
             self.version = settings.minVersion
-            for result in self._sendError(
+            for result in self._sendError(\
                   AlertDescription.protocol_version,
                   "Too old version: %s" % str(clientHello.client_version)):
                 yield result
@@ -1112,7 +1125,7 @@ class TLSConnection(TLSRecordLayer):
             if cipherSuite in clientHello.cipher_suites:
                 break
         else:
-            for result in self._sendError(
+            for result in self._sendError(\
                     AlertDescription.handshake_failure):
                 yield result
 
@@ -1121,13 +1134,13 @@ class TLSConnection(TLSRecordLayer):
             session = None
 
             #Check in the sharedKeys container
-            if sharedKeyDB and len(clientHello.session_id) == 16:
+            if sharedKeyDB and len(clientHello.session_id)==16:
                 try:
                     #Trim off zero padding, if any
                     for x in range(16):
-                        if clientHello.session_id[x] == 0:
+                        if clientHello.session_id[x]==0:
                             break
-                    self.allegedSharedKeyUsername = bytesToString(
+                    self.allegedSharedKeyUsername = bytesToString(\
                                             clientHello.session_id[:x])
                     session = sharedKeyDB[self.allegedSharedKeyUsername]
                     if not session.sharedKey:
@@ -1140,7 +1153,7 @@ class TLSConnection(TLSRecordLayer):
             #Then check in the session cache
             if sessionCache and not session:
                 try:
-                    session = sessionCache[bytesToString(
+                    session = sessionCache[bytesToString(\
                                                clientHello.session_id)]
                     if session.sharedKey:
                         raise AssertionError()
@@ -1148,16 +1161,16 @@ class TLSConnection(TLSRecordLayer):
                         raise AssertionError()
                     #Check for consistency with ClientHello
                     if session.cipherSuite not in cipherSuites:
-                        for result in self._sendError(
+                        for result in self._sendError(\
                                 AlertDescription.handshake_failure):
                             yield result
                     if session.cipherSuite not in clientHello.cipher_suites:
-                        for result in self._sendError(
+                        for result in self._sendError(\
                                 AlertDescription.handshake_failure):
                             yield result
                     if clientHello.srp_username:
                         if clientHello.srp_username != session.srpUsername:
-                            for result in self._sendError(
+                            for result in self._sendError(\
                                     AlertDescription.handshake_failure):
                                 yield result
                 except KeyError:
@@ -1193,14 +1206,16 @@ class TLSConnection(TLSRecordLayer):
                 self._handshakeDone(resumed=True)
                 return
 
+
         #If not a resumption...
+
         #TRICKY: we might have chosen an RSA suite that was only deemed
         #acceptable because of the shared-key resumption.  If the shared-
         #key resumption failed, because the identifier wasn't recognized,
         #we might fall through to here, where we have an RSA suite
         #chosen, but no certificate.
         if cipherSuite in CipherSuite.rsaSuites and not certChain:
-            for result in self._sendError(
+            for result in self._sendError(\
                     AlertDescription.handshake_failure):
                 yield result
 
@@ -1210,13 +1225,14 @@ class TLSConnection(TLSRecordLayer):
         if cipherSuite in CipherSuite.rsaSuites + \
                           CipherSuite.srpRsaSuites:
             if certificateType not in clientHello.certificate_types:
-                for result in self._sendError(
+                for result in self._sendError(\
                         AlertDescription.handshake_failure,
                         "the client doesn't support my certificate type"):
                     yield result
 
             #Move certChain -> serverCertChain, now that we're using it
             serverCertChain = certChain
+
 
         #Create sessionID
         if sessionCache:
@@ -1232,7 +1248,7 @@ class TLSConnection(TLSRecordLayer):
             if not clientHello.srp_username:
 
                 #Ask the client to re-send ClientHello with one
-                for result in self._sendMsg(Alert().create(
+                for result in self._sendMsg(Alert().create(\
                         AlertDescription.missing_srp_username,
                         AlertLevel.warning)):
                     yield result
@@ -1240,7 +1256,7 @@ class TLSConnection(TLSRecordLayer):
                 #Get ClientHello
                 for result in self._getMsg(ContentType.handshake,
                         HandshakeType.client_hello):
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                     else:
                         break
@@ -1250,7 +1266,7 @@ class TLSConnection(TLSRecordLayer):
                 #If client's version is too low, reject it (COPIED CODE; BAD!)
                 if clientHello.client_version < settings.minVersion:
                     self.version = settings.minVersion
-                    for result in self._sendError(
+                    for result in self._sendError(\
                           AlertDescription.protocol_version,
                           "Too old version: %s" % str(clientHello.client_version)):
                         yield result
@@ -1265,14 +1281,14 @@ class TLSConnection(TLSRecordLayer):
 
                 #Recalculate the privileged cipher suite, making sure to
                 #pick an SRP suite
-                cipherSuites = [c for c in cipherSuites if c in
-                                CipherSuite.srpSuites +
+                cipherSuites = [c for c in cipherSuites if c in \
+                                CipherSuite.srpSuites + \
                                 CipherSuite.srpRsaSuites]
                 for cipherSuite in cipherSuites:
                     if cipherSuite in clientHello.cipher_suites:
                         break
                 else:
-                    for result in self._sendError(
+                    for result in self._sendError(\
                             AlertDescription.handshake_failure):
                         yield result
 
@@ -1282,11 +1298,12 @@ class TLSConnection(TLSRecordLayer):
 
                 #The username better be there, this time
                 if not clientHello.srp_username:
-                    for result in self._sendError(
+                    for result in self._sendError(\
                             AlertDescription.illegal_parameter,
-                            "Client resent a hello, but without the SRP"
+                            "Client resent a hello, but without the SRP"\
                             " username"):
                         yield result
+
 
             #Get username
             self.allegedSrpUsername = clientHello.srp_username
@@ -1295,7 +1312,7 @@ class TLSConnection(TLSRecordLayer):
             try:
                 entry = verifierDB[self.allegedSrpUsername]
             except KeyError:
-                for result in self._sendError(
+                for result in self._sendError(\
                         AlertDescription.unknown_srp_username):
                     yield result
             (N, g, s, v) = entry
@@ -1303,7 +1320,7 @@ class TLSConnection(TLSRecordLayer):
             #Calculate server's ephemeral DH values (b, B)
             b = bytesToNumber(getRandomBytes(32))
             k = makeK(N, g)
-            B = (powMod(g, b, N) + (k * v)) % N
+            B = (powMod(g, b, N) + (k*v)) % N
 
             #Create ServerKeyExchange, signing it if necessary
             serverKeyExchange = ServerKeyExchange(cipherSuite)
@@ -1336,7 +1353,7 @@ class TLSConnection(TLSRecordLayer):
             for result in self._getMsg(ContentType.handshake,
                                       HandshakeType.client_key_exchange,
                                       cipherSuite):
-                if result in (0, 1):
+                if result in (0,1):
                     yield result
                 else:
                     break
@@ -1349,8 +1366,9 @@ class TLSConnection(TLSRecordLayer):
             u = makeU(N, A, B)
 
             #Calculate premaster secret
-            S = powMod((A * powMod(v, u, N)) % N, b, N)
+            S = powMod((A * powMod(v,u,N)) % N, b, N)
             premasterSecret = numberToBytes(S)
+
 
         #If we've selected an RSA suite, exchange keys and calculate
         #premaster secret:
@@ -1373,12 +1391,12 @@ class TLSConnection(TLSRecordLayer):
 
             #Get [Certificate,] (if was requested)
             if reqCert:
-                if self.version == (3, 0):
+                if self.version == (3,0):
                     for result in self._getMsg((ContentType.handshake,
                                                ContentType.alert),
                                                HandshakeType.certificate,
                                                certificateType):
-                        if result in (0, 1):
+                        if result in (0,1):
                             yield result
                         else:
                             break
@@ -1394,21 +1412,21 @@ class TLSConnection(TLSRecordLayer):
                     elif isinstance(msg, Certificate):
                         clientCertificate = msg
                         if clientCertificate.certChain and \
-                                clientCertificate.certChain.getNumCerts() != 0:
+                                clientCertificate.certChain.getNumCerts()!=0:
                             clientCertChain = clientCertificate.certChain
                     else:
                         raise AssertionError()
-                elif self.version in ((3, 1), (3, 2)):
+                elif self.version in ((3,1), (3,2)):
                     for result in self._getMsg(ContentType.handshake,
                                               HandshakeType.certificate,
                                               certificateType):
-                        if result in (0, 1):
+                        if result in (0,1):
                             yield result
                         else:
                             break
                     clientCertificate = result
                     if clientCertificate.certChain and \
-                            clientCertificate.certChain.getNumCerts() != 0:
+                            clientCertificate.certChain.getNumCerts()!=0:
                         clientCertChain = clientCertificate.certChain
                 else:
                     raise AssertionError()
@@ -1417,42 +1435,42 @@ class TLSConnection(TLSRecordLayer):
             for result in self._getMsg(ContentType.handshake,
                                       HandshakeType.client_key_exchange,
                                       cipherSuite):
-                if result in (0, 1):
+                if result in (0,1):
                     yield result
                 else:
                     break
             clientKeyExchange = result
 
             #Decrypt ClientKeyExchange
-            premasterSecret = privateKey.decrypt(
+            premasterSecret = privateKey.decrypt(\
                 clientKeyExchange.encryptedPreMasterSecret)
 
             randomPreMasterSecret = getRandomBytes(48)
             versionCheck = (premasterSecret[0], premasterSecret[1])
             if not premasterSecret:
                 premasterSecret = randomPreMasterSecret
-            elif len(premasterSecret) != 48:
+            elif len(premasterSecret)!=48:
                 premasterSecret = randomPreMasterSecret
             elif versionCheck != clientHello.client_version:
-                if versionCheck != self.version:  # Tolerate buggy IE clients
+                if versionCheck != self.version: #Tolerate buggy IE clients
                     premasterSecret = randomPreMasterSecret
 
             #Get and check CertificateVerify, if relevant
             if clientCertChain:
-                if self.version == (3, 0):
+                if self.version == (3,0):
                     #Create a temporary session object, just for the purpose
                     #of checking the CertificateVerify
                     session = Session()
                     session._calcMasterSecret(self.version, premasterSecret,
                                              clientRandom, serverRandom)
-                    verifyBytes = self._calcSSLHandshakeHash(
+                    verifyBytes = self._calcSSLHandshakeHash(\
                                     session.masterSecret, "")
-                elif self.version in ((3, 1), (3, 2)):
-                    verifyBytes = stringToBytes(self._handshake_md5.digest() +
+                elif self.version in ((3,1), (3,2)):
+                    verifyBytes = stringToBytes(self._handshake_md5.digest() +\
                                                 self._handshake_sha.digest())
                 for result in self._getMsg(ContentType.handshake,
                                           HandshakeType.certificate_verify):
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                     else:
                         break
@@ -1469,6 +1487,7 @@ class TLSConnection(TLSRecordLayer):
                                         verifyBytes):
                     postFinishedError = (AlertDescription.decrypt_error,
                                          "Signature failed to verify")
+
 
         #Create the session object
         self.session = Session()
@@ -1510,6 +1529,7 @@ class TLSConnection(TLSRecordLayer):
         #Mark the connection as open
         self.session._setResumable(True)
         self._handshakeDone(resumed=False)
+
 
     def _handshakeWrapperAsync(self, handshaker, checker):
         if not self.fault:
@@ -1556,12 +1576,13 @@ class TLSConnection(TLSRecordLayer):
             else:
                 raise TLSFaultError("No error!")
 
+
     def _getKeyFromChain(self, certificate, settings):
         #Get and check cert chain from the Certificate message
         certChain = certificate.certChain
         if not certChain or certChain.getNumCerts() == 0:
             for result in self._sendError(AlertDescription.illegal_parameter,
-                    "Other party sent a Certificate message without "
+                    "Other party sent a Certificate message without "\
                     "certificates"):
                 yield result
 

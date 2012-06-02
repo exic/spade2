@@ -12,19 +12,14 @@ if cryptlibpyLoaded:
 
         def __init__(self, key, mode, IV):
             AES.__init__(self, key, mode, IV, "cryptlib")
-            self.context = cryptlib_py.cryptCreateContext(
-                cryptlib_py.CRYPT_UNUSED, cryptlib_py.CRYPT_ALGO_AES)
-            cryptlib_py.cryptSetAttribute(self.context,
-                 cryptlib_py.CRYPT_CTXINFO_MODE, cryptlib_py.CRYPT_MODE_CBC)
-            cryptlib_py.cryptSetAttribute(self.context,
-                 cryptlib_py.CRYPT_CTXINFO_KEYSIZE, len(key))
-            cryptlib_py.cryptSetAttributeString(self.context,
-                 cryptlib_py.CRYPT_CTXINFO_KEY, key)
-            cryptlib_py.cryptSetAttributeString(self.context,
-                 cryptlib_py.CRYPT_CTXINFO_IV, IV)
+            self.context = cryptlib_py.cryptCreateContext(cryptlib_py.CRYPT_UNUSED, cryptlib_py.CRYPT_ALGO_AES)
+            cryptlib_py.cryptSetAttribute(self.context, cryptlib_py.CRYPT_CTXINFO_MODE, cryptlib_py.CRYPT_MODE_CBC)
+            cryptlib_py.cryptSetAttribute(self.context, cryptlib_py.CRYPT_CTXINFO_KEYSIZE, len(key))
+            cryptlib_py.cryptSetAttributeString(self.context, cryptlib_py.CRYPT_CTXINFO_KEY, key)
+            cryptlib_py.cryptSetAttributeString(self.context, cryptlib_py.CRYPT_CTXINFO_IV, IV)
 
         def __del__(self):
-            cryptlib_py.cryptDestroyContext(self.context)
+             cryptlib_py.cryptDestroyContext(self.context)
 
         def encrypt(self, plaintext):
             AES.encrypt(self, plaintext)

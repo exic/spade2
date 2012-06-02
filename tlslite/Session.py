@@ -4,7 +4,6 @@ from utils.compat import *
 from mathtls import *
 from constants import *
 
-
 class Session:
     """
     This class represents a TLS session.
@@ -65,10 +64,10 @@ class Session:
 
     def _calcMasterSecret(self, version, premasterSecret, clientRandom,
                          serverRandom):
-        if version == (3, 0):
+        if version == (3,0):
             self.masterSecret = PRF_SSL(premasterSecret,
                                 concatArrays(clientRandom, serverRandom), 48)
-        elif version in ((3, 1), (3, 2)):
+        elif version in ((3,1), (3,2)):
             self.masterSecret = PRF(premasterSecret, "master secret",
                                 concatArrays(clientRandom, serverRandom), 48)
         else:
@@ -108,9 +107,9 @@ class Session:
             return None
 
     def _createSharedKey(self, sharedKeyUsername, sharedKey):
-        if len(sharedKeyUsername) > 16:
+        if len(sharedKeyUsername)>16:
             raise ValueError()
-        if len(sharedKey) > 47:
+        if len(sharedKey)>47:
             raise ValueError()
 
         self.sharedKeyUsername = sharedKeyUsername
@@ -128,3 +127,5 @@ class Session:
                                 createByteArraySequence([]), 48)
         self.sharedKey = True
         return self
+
+

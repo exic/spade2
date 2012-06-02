@@ -16,7 +16,6 @@ import random
 
 PLATFORM_HOST = "127.0.0.1"
 
-
 class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     _body_template = "<table><tr><td class=cabecera colspan=2>#TOP#</td></tr><tr><td class=lateral>#MENU_LEFT#</td><td>#PANEL_RIGHT#</td></tr><tr><td>#BOTTOM#</td></tr></table>"
 
@@ -31,13 +30,13 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
         return "<html><head><script src='client.js'></script><link rel=stylesheet type='text/css' href='webadmin.css'><title>" + title + "</title></head>"
 
-    def body(self, body="", onload=""):
+    def body(self, body = "", onload=""):
         if onload:
             onload = '''onload="''' + onload + '''"'''
-        return "<body " + str(onload) + ">" + str(body)  # + "</body>"
+        return "<body "+str(onload)+">" + str(body) # + "</body>"
 
-    def footer(self, foot=""):
-        return foot + "</body>" + "</html>"
+    def footer(self, foot = ""):
+        return foot+"</body>"+"</html>"
 
     def getPage(self, req):
         """
@@ -81,8 +80,8 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self._body = self._body.replace("#TOP#", "<h1>SPADE BIDDER</h1>")
         #self._body = self._body.replace("#MENU_LEFT#", '<a class=lateral href="/">Main</a><br/><a class=lateral href="/pref">Preferences</a><br/><a class=lateral href="/clients">Active Clients</a><br/><a class=lateral href="/plugins">Plugins</a>')
         self._body = self._body.replace("#MENU_LEFT#", '')
-        self._body = self._body.replace("#PANEL_RIGHT#",
-             """<h2>MAIN CONTROL PANEL</h2><br>#MAINCP#""")
+        self._body = self._body.replace("#PANEL_RIGHT#", """<h2>MAIN CONTROL PANEL</h2><br>#MAINCP#""")
+
 
     def do_POST(self):
         print "POST"
@@ -107,7 +106,7 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         request = self.raw_requestline.split()
         page = self.getPage(request[1])
         try:
-            vars = self.getVars("?" + self._POST_REQ)
+            vars = self.getVars("?"+self._POST_REQ)
         except:
             vars = self.getVars(request[1])
         #print page, vars
@@ -135,8 +134,7 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
             self._body = self._body.replace("#MAINCP#", cp)
             self._body = self._body.replace("#BOTTOM#", '')
-            self._content = self.header() + self.body(self.
-                _body) + self.footer("<h5>Designed by <a href='http://gti-ia.dsic.upv.es'>GTI-IA DSIC UPV</a></h5>")
+            self._content = self.header() + self.body(self._body) + self.footer("<h5>Designed by <a href='http://gti-ia.dsic.upv.es'>GTI-IA DSIC UPV</a></h5>")
 
         #Get Auction Data
         elif page == "/getauctiondata":
@@ -144,13 +142,10 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             try:
                 for key in self.server.behav.myAgent.auctions.keys():
                     s = s + key + " "
-                    s = s + str(self.server.behav.
-                        myAgent.auctions[key]["time"]) + " "
-                    s = s + str(self.server.behav.
-                        myAgent.auctions[key]["price"]) + " "
+                    s = s + str(self.server.behav.myAgent.auctions[key]["time"]) + " "
+                    s = s + str(self.server.behav.myAgent.auctions[key]["price"]) + " "
                     if self.server.behav.myAgent.auctions[key]["current_bidder"]:
-                        s = s + str(self.server.
-                            behav.myAgent.auctions[key]["current_bidder"]) + ";;"
+                        s = s + str(self.server.behav.myAgent.auctions[key]["current_bidder"]) + ";;"
                     else:
                         s = s + "-;;"
                 self.wfile.write(s)
@@ -168,18 +163,18 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.server.behav.myAgent.check_price()
 
             #Process POST vars
-            if "do" in vars and vars["do"] == "yes":
+            if vars.has_key("do") and vars["do"] == "yes":
                 for auction_key, auction in self.server.behav.myAgent.auctions.items():
 
                     if auction_key+"_max" in vars.keys() and vars[auction_key+"_max"]:
                         if auction["max"] and auction["bidding"]:
                             self.server.behav.myAgent.update_log("Updating bid to "+str(vars[auction_key+'_max']))
                             self.server.behav.myAgent.money=self.server.behav.myAgent.money-int(vars[auction_key+"_max"])+int(auction["max"])
-                        auction["max"] = vars[auction_key + "_max"]
+                        auction["max"] = vars[auction_key+"_max"]
                     else:
                         auction["max"] = None
                     #print "AUCTION: ", str(auction)
-                    if auction_key in vars.keys():  # and vars[auction_key]:
+                    if auction_key in vars.keys():# and vars[auction_key]:
                         if not auction["bidding"]:
                             if self.server.behav.myAgent.money >= int(vars[auction_key+"_max"]):
                                 if int(vars[auction_key+"_max"]) >= int(auction["price"]):
@@ -205,8 +200,7 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                                 self.server.behav.myAgent.update_log("You cannot leave an auction when you are the current winner")
 
             cp = cp + "Agent: " + self.server.behav.myAgent.getAID().getName() + """<div>"""
-            cp = cp + "Money: <b>" + str(self.server.behav.
-                myAgent.money) + """</b><div>"""
+            cp = cp + "Money: <b>" + str(self.server.behav.myAgent.money) + """</b><div>"""
 
             cp = cp + """<a href="/log">Agent Log</a><div>"""
 
@@ -216,7 +210,7 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             onload = ""
 
             parity = "impar"
-            for key, auction in self.server.behav.myAgent.auctions.items():
+            for key,auction in self.server.behav.myAgent.auctions.items():
                 # Check for current auction
                 # Build time left
 #                time_left = int(auction["time"])
@@ -231,8 +225,8 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 cp = cp + """
                 <tr>
                 <td class="""+parity+"""><img height=130 width=150 src=""" + str(auction["image"]) + """  /></td>
-                <td class=""" + parity + ">" + auction["name"] + """</td>
-                <td class=""" + parity + ">" + auction["desc"] + """</td>"""
+                <td class="""+parity+">" + auction["name"] + """</td>
+                <td class="""+parity+">" + auction["desc"] + """</td>"""
 
                 #cp = cp + """<td class="""+parity+">" + str(auction["price"]) + """</td>"""
                 cp = cp + """<td class="""+parity+"><span class="+parity+" id='price_" +key + """'></span></td>"""
@@ -247,20 +241,15 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 cp = cp + """<td class="""+parity+"""><span class="""+parity+""" id='winner_"""+key+"""'></span></td>"""
 
                 cp = cp + """<td class="""+parity+'''><input name="'''+key+'''" type="checkbox"'''
-                if auction["bidding"]:
-                    cp = cp + ''' checked="checked" '''
-                if auction["time"] <= 0:
-                    cp = cp + ''' disabled="disabled" '''
+                if auction["bidding"]: cp = cp + ''' checked="checked" '''
+                if auction["time"] <= 0: cp = cp + ''' disabled="disabled" '''
                 cp = cp + """/></td>"""
                 cp = cp + """<td class="""+parity+'''><input name="'''+key+'''_max" type=text'''
-                if auction["max"]:
-                    cp = cp + ''' value=''' + str(auction["max"])
+                if auction["max"]: cp = cp + ''' value=''' + str(auction["max"])
                 cp = cp + """ /></td></tr>"""
 
-                if parity == "impar":
-                    parity = "par"
-                else:
-                    parity = "impar"
+                if parity == "impar": parity = "par"
+                else: parity = "impar"
 
             cp = cp + """<INPUT TYPE="hidden" NAME="do" VALUE="yes">"""
             cp = cp + """</table><div>"""
@@ -268,12 +257,15 @@ class WebAdminHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
             self._body = self._body.replace("#MAINCP#", cp)
             self._body = self._body.replace("#BOTTOM#", '')
-            self._content = self.header() + self.body(self.
-                _body, onload="auction_update()") + self.footer("<h5>Designed by <a href='http://gti-ia.dsic.upv.es'>GTI-IA DSIC UPV</a></h5>")
+            self._content = self.header() + self.body(self._body, onload="auction_update()") + self.footer("<h5>Designed by <a href='http://gti-ia.dsic.upv.es'>GTI-IA DSIC UPV</a></h5>")
 
         else:
             self._content = self.header() + self.body() + self.footer()
         self.wfile.write(self._content)
+
+
+
+
 
 
 class Bidder(Agent.Agent):
@@ -286,7 +278,7 @@ class Bidder(Agent.Agent):
             # Coalliate
             dad = DF.DfAgentDescription()
             ds = DF.ServiceDescription()
-            ds.setName("ALLIANCE_" + self._item)
+            ds.setName("ALLIANCE_"+self._item)
             #ds.addProperty({'item':self._item})
             dad.addService(ds)
             search = self.myAgent.searchService(dad)
@@ -295,7 +287,7 @@ class Bidder(Agent.Agent):
             aname = False
             if str(search).strip():
                 try:
-                    for j in range(0, len(search)):
+                    for j in range(0,len(search)):
                         entry = search[j][1]
     #                    print "ENTRY:", str(entry)
     #                    print "ENTRY KEYS:", str(entry.keys())
@@ -313,20 +305,19 @@ class Bidder(Agent.Agent):
 
             if aname:
                 msg = ACLMessage.ACLMessage()
-                msg.addReceiver(AID.aid(aname, addresses=["xmpp://" + aname]))
+                msg.addReceiver(AID.aid(aname, addresses=["xmpp://"+aname]))
                 msg.setContent("JOIN " + str(self._money))
                 msg.setPerformative("request")
                 msg.setOntology("spade:x:organization")
                 self.myAgent.send(msg)
                 self.supervisor = False
-                self.myAgent.update_log(
-                    "Tried to JOIN coallition " + self._item)
+                self.myAgent.update_log("Tried to JOIN coallition " + self._item)
             else:
                 # Register service in DF
                 sd = DF.ServiceDescription()
-                sd.setName("ALLIANCE_" + self._item)
+                sd.setName("ALLIANCE_"+self._item)
                 sd.setType("organization")
-                sd.addProperty({"name": "topology", "value": "coallition"})
+                sd.addProperty({"name":"topology","value":"coallition"})
                 dad = DF.DfAgentDescription()
                 dad.addService(sd)
                 dad.setAID(self.myAgent.getAID())
@@ -337,11 +328,11 @@ class Bidder(Agent.Agent):
                 self.supervisor = True
                 self.myAgent.auctions[self._item]["original_max"] = self._money
                 self.myAgent.coallitions[self._item] = True  # I'm the boss
-                self.myAgent.update_log(
-                    "I started a coallition to buy item " + self._item)
+                self.myAgent.update_log("I started a coallition to buy item " + self._item)
+
 
         def _process(self):
-            msg = self._receive(True, 5)
+            msg = self._receive(True,5)
             if msg == None:
                 if self.myAgent.auctions[self._item]["time"] <= 0 and self.supervisor:
                     if self.myAgent.auctions[self._item]["current_bidder"] == self.myAgent.getAID().getName():
@@ -357,12 +348,11 @@ class Bidder(Agent.Agent):
                     else:
                         rep = ACLMessage.ACLMessage()
                         rep.setPerformative("inform")
-                        rep.setContent("WINNER " +
-                             self._item +" " + str(self.myAgent.auctions[self._item]["price"])+" "+str(self.myAgent.auctions[self._item]["current_bidder"]))
+                        rep.setContent("WINNER "+ self._item +" " + str(self.myAgent.auctions[self._item]["price"])+" "+str(self.myAgent.auctions[self._item]["current_bidder"]))
                         for m in self.members:
-                            if m != self.myAgent.getAID():
-                                rep.receivers = [m]
-                                self.myAgent.send(rep)
+                        	if m != self.myAgent.getAID():
+	                            rep.receivers = [m]
+	                            self.myAgent.send(rep)
                     #Terminate behaviour
                     self.kill()
 
@@ -381,8 +371,7 @@ class Bidder(Agent.Agent):
                 self.myAgent.send(rep)
 
             elif "JOIN" in msg.getContent():
-                self.myAgent.auctions[self._item]["max"]
-                    = int(self.myAgent.auctions[self._item]["max"]) + int(msg.getContent().split(" ")[1])
+                self.myAgent.auctions[self._item]["max"] = int(self.myAgent.auctions[self._item]["max"]) + int(msg.getContent().split(" ")[1])
                 entry = "Someone wants to join my organization with " + msg.getContent().split(" ")[1] + " euros"
                 self.myAgent.update_log(entry)
                 print entry
@@ -407,6 +396,7 @@ class Bidder(Agent.Agent):
             elif "REFUSE" in msg.getContent():
                 print "They didn't want me :-("
 
+
     class CheckPriceBehav(Behaviour.OneShotBehaviour):
         def __init__(self, msg):
             Behaviour.OneShotBehaviour.__init__(self)
@@ -416,14 +406,14 @@ class Bidder(Agent.Agent):
 
         def _process(self):
             to = "auctioner@" + PLATFORM_HOST
-            receiver = AID.aid(name=to, addresses=["xmpp://" + to])
-            self._msg.addReceiver(receiver)
+            receiver = AID.aid(name=to, addresses=["xmpp://"+to])
+            self._msg.addReceiver( receiver )
             self._msg.setPerformative('request')
             self._msg.setContent("ASK")
             #print "ASKING CURRENT AUCTIONS"
             self.myAgent.send(self._msg)
 
-            msg = self._receive(True, 20)
+            msg = self._receive(True,20)
             if msg == None or msg.getPerformative() != 'inform':
                 print "There was an error bidding. (not inform)"
                 self.finished = True
@@ -433,12 +423,12 @@ class Bidder(Agent.Agent):
                     if "::" in msg.getContent():
                         auctions_list = msg.getContent().split(";;")
                         for auc in auctions_list:
-                            key, auction = auc.split("::")
+                            key,auction = auc.split("::")
                             auction = auction.split(",,")
 
                             if not self.myAgent.auctions.has_key(key): self.myAgent.auctions[key] = {}
 
-                            for i in range(0, len(auction), 2):
+                            for i in range(0,len(auction),2):
                                 if auction[i]:
                                     self.myAgent.auctions[key][auction[i].strip("'")] = auction[i+1].strip("'")
                             if not self.myAgent.auctions[key].has_key("bidding"): self.myAgent.auctions[key]['bidding'] = False
@@ -457,6 +447,7 @@ class Bidder(Agent.Agent):
 
             self.finished = True
 
+
     class MainBehav(Behaviour.Behaviour):
 
 #        def _setup(self):
@@ -464,20 +455,20 @@ class Bidder(Agent.Agent):
 
         def _process(self):
             t = time.time()
-            if (t - self.timer) > 1:  # Wait a second Mr. Postman
+            if (t - self.timer) > 1:  #Wait a second Mr. Postman
                 #Check Prices
                 self.myAgent.check_price()
                 self.timer = time.time()
 
             to = "auctioner@" + PLATFORM_HOST
-            receiver = AID.aid(name=to, addresses=["xmpp://" + to])
+            receiver = AID.aid(name=to, addresses=["xmpp://"+to])
 #            self._msg.addReceiver( receiver )
 #            self._msg.setPerformative('request')
 #            self._msg.setContent("BID "+str(self.amount))
 #            print "SENDING A BID OF ", str(self.amount)
 #            self.myAgent.send(self._msg)
 
-            for k, auction in self.myAgent.auctions.items():
+            for k,auction in self.myAgent.auctions.items():
                 if auction['bidding']:
                     if (self.myAgent.coallitions.has_key(k) and self.myAgent.coallitions[k] == True) or \
                     not self.myAgent.coallitions.has_key(k):
@@ -490,7 +481,7 @@ class Bidder(Agent.Agent):
                                     rep = ACLMessage.ACLMessage()
                                     rep.setPerformative("request")
                                     rep.addReceiver(receiver)
-                                    rep.setContent("BID " + k + " " + str(bid))
+                                    rep.setContent("BID "+k+" "+str(bid))
                                     self.myAgent.send(rep)
                                     self.myAgent.update_log("I have bidded for item " + k + " a quantity of " + str(bid) + " euros")
                                     #Update the price and current_bidder of the item based on my own bid.
@@ -499,8 +490,7 @@ class Bidder(Agent.Agent):
                                     auction['current_bidder'] = self.myAgent.getAID().getName()
 
             self.msg = None
-            self.msg = self._receive(True, 1)
-                  #Adjust this timeout to prevent CPU hogging
+            self.msg = self._receive(True,1)  #Adjust this timeout to prevent CPU hogging
             if self.msg == None:
                 #self.myAgent.check_price()
                 return
@@ -512,8 +502,7 @@ class Bidder(Agent.Agent):
                 if "CURRENTBID" in self.msg.getContent():
                     cont_list = self.msg.getContent().split()
                     self.myAgent.auctions[cont_list[1]]["price"] = cont_list[2]
-                    self.myAgent.auctions[cont_list[1]]
-                        ["current_bidder"] = cont_list[3]
+                    self.myAgent.auctions[cont_list[1]]["current_bidder"] = cont_list[3]
                     if cont_list[3] == self.myAgent.getAID().getName():
                         entry =  "Confirmation that I made a bid for item %s of %s"%(cont_list[1],cont_list[2])
                         print entry
@@ -561,15 +550,15 @@ class Bidder(Agent.Agent):
                     print entry
                     self.myAgent.update_log(entry)
                     self.myAgent.auctions[cont_list[1]]["price"] = cont_list[2]
-                    self.myAgent.auctions[cont_list[1]]
-                        ["current_bidder"] = cont_list[3]
+                    self.myAgent.auctions[cont_list[1]]["current_bidder"] = cont_list[3]
                     self.myAgent.auctions[cont_list[1]]["time"] = 0
                     if cont_list[3] != self.myAgent.getAID().getName():
                         if self.myAgent.coallitions.has_key(cont_list[1]) and self.myAgent.coallitions[cont_list[1]] == True:
-                            self.myAgent.money = int(self.myAgent.money) + int(self.myAgent.auctions[cont_list[1]]["original_max"])
+                             self.myAgent.money = int(self.myAgent.money) + int(self.myAgent.auctions[cont_list[1]]["original_max"])
                         else:
-                            self.myAgent.money = int(self.myAgent.money) + int(self.myAgent.auctions[cont_list[1]]["max"])
+                             self.myAgent.money = int(self.myAgent.money) + int(self.myAgent.auctions[cont_list[1]]["max"])
                     #self.myAgent.check_price()
+
 
         def done(self):
             pass
@@ -591,8 +580,11 @@ class Bidder(Agent.Agent):
 #                search = self.myAgent.searchService(dad)
 #                #print str(search)
 
+
+
         def onEnd(self):
             pass
+
 
     class WebAdminBehav(Behaviour.Behaviour):
         #WEB_ADMIN_PORT = 8009
@@ -631,10 +623,10 @@ class Bidder(Agent.Agent):
             #print "Bidder WebAdmin Terminated"
 
     def _setup(self):
-        self.log = ""  # Events log
+        self.log = ""  #Events log
 
         self.auctions = {}
-        self.coallitions = {}  # Buying Coallitions the agent is in
+        self.coallitions = {}  #Buying Coallitions the agent is in
         entry = "Starting main Behaviour"
         self.setDefaultBehaviour(self.MainBehav())
         print entry
@@ -682,12 +674,13 @@ class Bidder(Agent.Agent):
         t = Behaviour.MessageTemplate(template)
         b = self.CheckPriceBehav(msg)
 
-        self.addBehaviour(b, t)
+        self.addBehaviour(b,t)
         b.join()
         return b.result
 
     def update_log(self, entry):
         self.log = str(entry) + "<br/>" + self.log
+
 
 
 if __name__ == "__main__":
@@ -699,9 +692,9 @@ if __name__ == "__main__":
     """
     host = PLATFORM_HOST
 
-    agent = "bidder" + str(random.randint(0, 10000)) + "@" + host
-    print "Agent " + agent + " registering"
-    b = Bidder(agent, "secret")
+    agent = "bidder"+str(random.randint(0,10000))+"@"+host
+    print "Agent "+agent+" registering"
+    b = Bidder(agent,"secret")
     if len(sys.argv) > 1:
         b.WEB_ADMIN_PORT = sys.argv[1]
     else:

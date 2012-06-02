@@ -18,8 +18,7 @@ from spade import MessageReceiver
 from spade import pyparsing
 from spade import SL0Parser
 from spade import XMLCodec
-from spade import SpadeConfigParser
-
+from spade import SpadeConfigParser 
 
 class SpadeBackend:
     """
@@ -34,7 +33,7 @@ class SpadeBackend:
         #jid = configfile.get(section,'JID')
         passwd = config[section]['password']
         server = config["platform"]['hostname']
-        port = int(config[section]['port'])
+        port = int( config[section]['port'] )
         jid = section + "." + server
         if section == "acc":
             agent = agentClass(jid, passwd, server, port, config=config)
@@ -46,9 +45,9 @@ class SpadeBackend:
     def __init__(self, configfilename="/etc/spade/spade.xml"):
         parser = SpadeConfigParser.ConfigParser()
         self.config = parser.parse(configfilename)
-        self.ams = None
-        self.df = None
-        self.acc = None
+        self.ams=None
+        self.df =None
+        self.acc=None     
         self.alive = True  # Alive flag
 
     def start(self):
@@ -59,22 +58,22 @@ class SpadeBackend:
         #self.ams.DEBUG = self.acc.DEBUG
         self.df = self.runAgent(self.config, "df", DF.DF)
         #self.df.DEBUG = self.acc.DEBUG
-        #self.simba = self.runAgent(self.configfile, "simba", SIMBA.SIMBA)
+        #self.simba = self.runAgent(self.configfile, "simba", SIMBA.SIMBA)        
 
     def shutdown(self):
         if self.df:
             self.df.stop()
             #del self.df
-        if self.ams:
+        if self.ams: 
             self.ams.stop()
             #del self.ams
         if self.acc:
             self.acc.stop()
             #del self.acc
 
-    def DEBUG(self, component="", msg="", typ=""):
-            self.acc.DEBUG(msg, typ, component)
+    def DEBUG(self,component="",msg="",typ=""):
+            self.acc.DEBUG(msg,typ,component)
 
-if __name__ == "__main__":
+if __name__ ==  "__main__":
         p = SpadeBackend()
         p.start()

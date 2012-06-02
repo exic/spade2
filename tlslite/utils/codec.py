@@ -2,7 +2,6 @@
 
 from compat import *
 
-
 class Writer:
     def __init__(self, length=0):
         #If length is zero, then this is just a "trial run" to determine length
@@ -11,7 +10,7 @@ class Writer:
 
     def add(self, x, length):
         if self.bytes:
-            newIndex = self.index + length - 1
+            newIndex = self.index+length-1
             while newIndex >= self.index:
                 self.bytes[newIndex] = x & 0xFF
                 x >>= 8
@@ -23,15 +22,15 @@ class Writer:
             for e in seq:
                 self.add(e, length)
         else:
-            self.index += len(seq) * length
+            self.index += len(seq)*length
 
     def addVarSeq(self, seq, length, lengthLength):
         if self.bytes:
-            self.add(len(seq) * length, lengthLength)
+            self.add(len(seq)*length, lengthLength)
             for e in seq:
                 self.add(e, length)
         else:
-            self.index += lengthLength + (len(seq) * length)
+            self.index += lengthLength + (len(seq)*length)
 
 
 class Parser:
@@ -50,7 +49,7 @@ class Parser:
         return x
 
     def getFixBytes(self, lengthBytes):
-        bytes = self.bytes[self.index: self.index + lengthBytes]
+        bytes = self.bytes[self.index : self.index+lengthBytes]
         self.index += lengthBytes
         return bytes
 
@@ -68,7 +67,7 @@ class Parser:
         lengthList = self.get(lengthLength)
         if lengthList % length != 0:
             raise SyntaxError()
-        lengthList = int(lengthList / length)
+        lengthList = int(lengthList/length)
         l = [0] * lengthList
         for x in range(lengthList):
             l[x] = self.get(length)

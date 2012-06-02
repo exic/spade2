@@ -4,7 +4,6 @@ from smtplib import SMTP
 from tlslite.TLSConnection import TLSConnection
 from tlslite.integration.ClientHelper import ClientHelper
 
-
 class SMTP_TLS(SMTP):
     """This class extends L{smtplib.SMTP} with TLS support."""
 

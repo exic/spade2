@@ -17,7 +17,6 @@ import socket
 import errno
 import traceback
 
-
 class _ConnectionState:
     def __init__(self):
         self.macContext = None
@@ -120,8 +119,8 @@ class TLSRecordLayer:
         self._handshake_sha = hashlib.sha1()
 
         #TLS Protocol Version
-        self.version = (0, 0)  # read-only
-        self._versionCheck = False  # Once we choose a version, this is True
+        self.version = (0,0) #read-only
+        self._versionCheck = False #Once we choose a version, this is True
 
         #Current and Pending connection states
         self._writeState = _ConnectionState()
@@ -130,11 +129,11 @@ class TLSRecordLayer:
         self._pendingReadState = _ConnectionState()
 
         #Is the connection open?
-        self.closed = True  # read-only
-        self._refCount = 0  # Used to trigger closure
+        self.closed = True #read-only
+        self._refCount = 0 #Used to trigger closure
 
         #Is this a resumed (or shared-key) session?
-        self.resumed = False  # read-only
+        self.resumed = False #read-only
 
         #What username did the client claim in his handshake?
         self.allegedSharedKeyUsername = None
@@ -196,10 +195,10 @@ class TLSRecordLayer:
         @return: A generator; see above for details.
         """
         try:
-            while len(self._readBuffer) < min and not self.closed:
+            while len(self._readBuffer)<min and not self.closed:
                 try:
                     for result in self._getMsg(ContentType.application_data):
-                        if result in (0, 1):
+                        if result in (0,1):
                             yield result
                     applicationData = result
                     self._readBuffer += bytesToString(applicationData.write())
@@ -263,11 +262,11 @@ class TLSRecordLayer:
                     break
                 if endIndex > len(s):
                     endIndex = len(s)
-                block = stringToBytes(s[startIndex: endIndex])
+                block = stringToBytes(s[startIndex : endIndex])
                 applicationData = ApplicationData().create(block)
                 for result in self._sendMsg(applicationData, skipEmptyFrag):
                     yield result
-                skipEmptyFrag = True  # only send an empy fragment on 1st message
+                skipEmptyFrag = True #only send an empy fragment on 1st message
                 index += 1
         except:
             self._shutdown(False)
@@ -318,14 +317,14 @@ class TLSRecordLayer:
         self._refCount -= 1
         if self._refCount == 0 and not self.closed:
             try:
-                for result in self._sendMsg(Alert().create(
+                for result in self._sendMsg(Alert().create(\
                         AlertDescription.close_notify, AlertLevel.warning)):
                     yield result
                 alert = None
                 while not alert:
-                    for result in self._getMsg((ContentType.alert,
+                    for result in self._getMsg((ContentType.alert, \
                                               ContentType.application_data)):
-                        if result in (0, 1):
+                        if result in (0,1):
                             yield result
                     if result.contentType == ContentType.alert:
                         alert = result
@@ -363,6 +362,8 @@ class TLSRecordLayer:
         if not self._writeState.encContext:
             return None
         return self._writeState.encContext.implementation
+
+
 
     #Emulate a socket, somewhat -
     def send(self, s):
@@ -420,14 +421,16 @@ class TLSRecordLayer:
         """Set the value of the given socket option (socket emulation)."""
         return self.sock.setsockopt(level, optname, value)
 
+
      #*********************************************************
      # Public Functions END
      #*********************************************************
+
     def _shutdown(self, resumable):
         self._writeState = _ConnectionState()
         self._readState = _ConnectionState()
         #Don't do this: self._readBuffer = ""
-        self.version = (0, 0)
+        self.version = (0,0)
         self._versionCheck = False
         self.closed = True
         if self.closeSocket:
@@ -436,6 +439,7 @@ class TLSRecordLayer:
         #Even if resumable is False, we'll never toggle this on
         if not resumable and self.session:
             self.session.resumable = False
+
 
     def _sendError(self, alertDescription, errorStr=None):
         alert = Alert().create(alertDescription, AlertLevel.fatal)
@@ -459,7 +463,7 @@ class TLSRecordLayer:
         #we first send an empty Application Data message.  This prevents
         #an attacker from launching a chosen-plaintext attack based on
         #knowing the next IV.
-        if not self.closed and not skipEmptyFrag and self.version == (3, 1):
+        if not self.closed and not skipEmptyFrag and self.version == (3,1):
             if self._writeState.encContext:
                 if self._writeState.encContext.isBlockCipher:
                     for result in self._sendMsg(ApplicationData(),
@@ -479,21 +483,21 @@ class TLSRecordLayer:
             mac = self._writeState.macContext.copy()
             mac.update(seqnumStr)
             mac.update(chr(contentType))
-            if self.version == (3, 0):
-                mac.update(chr(int(len(bytes) / 256)))
-                mac.update(chr(int(len(bytes) % 256)))
-            elif self.version in ((3, 1), (3, 2)):
+            if self.version == (3,0):
+                mac.update( chr( int(len(bytes)/256) ) )
+                mac.update( chr( int(len(bytes)%256) ) )
+            elif self.version in ((3,1), (3,2)):
                 mac.update(chr(self.version[0]))
                 mac.update(chr(self.version[1]))
-                mac.update(chr(int(len(bytes) / 256)))
-                mac.update(chr(int(len(bytes) % 256)))
+                mac.update( chr( int(len(bytes)/256) ) )
+                mac.update( chr( int(len(bytes)%256) ) )
             else:
                 raise AssertionError()
             mac.update(bytesStr)
             macString = mac.digest()
             macBytes = stringToBytes(macString)
             if self.fault == Fault.badMAC:
-                macBytes[0] = (macBytes[0] + 1) % 256
+                macBytes[0] = (macBytes[0]+1) % 256
 
         #Encrypt for Block or Stream Cipher
         if self._writeState.encContext:
@@ -501,18 +505,18 @@ class TLSRecordLayer:
             if self._writeState.encContext.isBlockCipher:
 
                 #Add TLS 1.1 fixed block
-                if self.version == (3, 2):
+                if self.version == (3,2):
                     bytes = self.fixedIVBlock + bytes
 
                 #Add padding: bytes = bytes + (macBytes + paddingBytes)
                 currentLength = len(bytes) + len(macBytes) + 1
                 blockLength = self._writeState.encContext.block_size
-                paddingLength = blockLength - (currentLength % blockLength)
+                paddingLength = blockLength-(currentLength % blockLength)
 
-                paddingBytes = createByteArraySequence([paddingLength] *
-                                                       (paddingLength + 1))
+                paddingBytes = createByteArraySequence([paddingLength] * \
+                                                       (paddingLength+1))
                 if self.fault == Fault.badPadding:
-                    paddingBytes[0] = (paddingBytes[0] + 1) % 256
+                    paddingBytes[0] = (paddingBytes[0]+1) % 256
                 endBytes = concatArrays(macBytes, paddingBytes)
                 bytes = concatArrays(bytes, endBytes)
                 #Encrypt
@@ -532,7 +536,7 @@ class TLSRecordLayer:
         s = bytesToString(concatArrays(r.write(), bytes))
         while 1:
             try:
-                bytesSent = self.sock.send(s)  # Might raise socket.error
+                bytesSent = self.sock.send(s) #Might raise socket.error
             except socket.error, why:
                 if why[0] == errno.EWOULDBLOCK:
                     yield 1
@@ -543,6 +547,7 @@ class TLSRecordLayer:
                 return
             s = s[bytesSent:]
             yield 1
+
 
     def _getMsg(self, expectedType, secondaryType=None, constructorType=None):
         try:
@@ -556,7 +561,7 @@ class TLSRecordLayer:
             #  - we receive an empty application-data fragment; we try again
             while 1:
                 for result in self._getNextRecord():
-                    if result in (0, 1):
+                    if result in (0,1):
                         yield result
                 recordHeader, p = result
 
@@ -599,7 +604,7 @@ class TLSRecordLayer:
                             elif alert.level == AlertLevel.warning:
                                 self._shutdown(False)
 
-                        else:  # Fatal alert:
+                        else: #Fatal alert:
                             self._shutdown(False)
 
                         #Raise the alert as an exception
@@ -626,7 +631,7 @@ class TLSRecordLayer:
 
                     #Otherwise: this is an unexpected record, but neither an
                     #alert nor renegotiation
-                    for result in self._sendError(
+                    for result in self._sendError(\
                             AlertDescription.unexpected_message,
                             "received type=%d" % recordHeader.type):
                         yield result
@@ -649,19 +654,19 @@ class TLSRecordLayer:
                 if recordHeader.ssl2:
                     subType = p.get(1)
                     if subType != HandshakeType.client_hello:
-                        for result in self._sendError(
+                        for result in self._sendError(\
                                 AlertDescription.unexpected_message,
                                 "Can only handle SSLv2 ClientHello messages"):
                             yield result
                     if HandshakeType.client_hello not in secondaryType:
-                        for result in self._sendError(
+                        for result in self._sendError(\
                                 AlertDescription.unexpected_message):
                             yield result
                     subType = HandshakeType.client_hello
                 else:
                     subType = p.get(1)
                     if subType not in secondaryType:
-                        for result in self._sendError(
+                        for result in self._sendError(\
                                 AlertDescription.unexpected_message,
                                 "Expecting %s, got %s" % (str(secondaryType), subType)):
                             yield result
@@ -687,7 +692,7 @@ class TLSRecordLayer:
                 elif subType == HandshakeType.server_hello_done:
                     yield ServerHelloDone().parse(p)
                 elif subType == HandshakeType.client_key_exchange:
-                    yield ClientKeyExchange(constructorType,
+                    yield ClientKeyExchange(constructorType, \
                                             self.version).parse(p)
                 elif subType == HandshakeType.finished:
                     yield Finished(self.version).parse(p)
@@ -699,6 +704,7 @@ class TLSRecordLayer:
             for result in self._sendError(AlertDescription.decode_error,
                                          formatExceptionTrace(e)):
                 yield result
+
 
     #Returns next record or next handshake message
     def _getNextRecord(self):
@@ -717,7 +723,7 @@ class TLSRecordLayer:
         ssl2 = False
         while 1:
             try:
-                s = self.sock.recv(recordHeaderLength - len(bytes))
+                s = self.sock.recv(recordHeaderLength-len(bytes))
             except socket.error, why:
                 if why[0] == errno.EWOULDBLOCK:
                     yield 0
@@ -726,11 +732,11 @@ class TLSRecordLayer:
                     raise
 
             #If the connection was abruptly closed, raise an error
-            if len(s) == 0:
+            if len(s)==0:
                 raise TLSAbruptCloseError()
 
             bytes += stringToBytes(s)
-            if len(bytes) == 1:
+            if len(bytes)==1:
                 if bytes[0] in ContentType.all:
                     ssl2 = False
                     recordHeaderLength = 5
@@ -766,7 +772,7 @@ class TLSRecordLayer:
                     raise
 
             #If the connection is closed, raise a socket error
-            if len(s) == 0:
+            if len(s)==0:
                     raise TLSAbruptCloseError()
 
             bytes += stringToBytes(s)
@@ -789,7 +795,7 @@ class TLSRecordLayer:
 
         #Decrypt the record
         for result in self._decryptRecord(r.type, bytes):
-            if result in (0, 1):
+            if result in (0,1):
                 yield result
             else:
                 break
@@ -806,28 +812,28 @@ class TLSRecordLayer:
             #Otherwise, we loop through and add the handshake messages to the
             #handshake buffer
             while 1:
-                if p.index == len(bytes):  # If we're at the end
+                if p.index == len(bytes): #If we're at the end
                     if not self._handshakeBuffer:
-                        for result in self._sendError(
-                                AlertDescription.decode_error,
+                        for result in self._sendError(\
+                                AlertDescription.decode_error, \
                                 "Received empty handshake record"):
                             yield result
                     break
                 #There needs to be at least 4 bytes to get a header
-                if p.index + 4 > len(bytes):
-                    for result in self._sendError(
+                if p.index+4 > len(bytes):
+                    for result in self._sendError(\
                             AlertDescription.decode_error,
                             "A record has a partial handshake message (1)"):
                         yield result
-                p.get(1)  # skip handshake type
+                p.get(1) # skip handshake type
                 msgLength = p.get(3)
-                if p.index + msgLength > len(bytes):
-                    for result in self._sendError(
+                if p.index+msgLength > len(bytes):
+                    for result in self._sendError(\
                             AlertDescription.decode_error,
                             "A record has a partial handshake message (2)"):
                         yield result
 
-                handshakePair = (r, bytes[p.index - 4: p.index + msgLength])
+                handshakePair = (r, bytes[p.index-4 : p.index+msgLength])
                 self._handshakeBuffer.append(handshakePair)
                 p.index += msgLength
 
@@ -837,6 +843,7 @@ class TLSRecordLayer:
             self._handshakeBuffer = self._handshakeBuffer[1:]
             yield (recordHeader, Parser(bytes))
 
+
     def _decryptRecord(self, recordType, bytes):
         if self._readState.encContext:
 
@@ -844,28 +851,27 @@ class TLSRecordLayer:
             if self._readState.encContext.isBlockCipher:
                 blockLength = self._readState.encContext.block_size
                 if len(bytes) % blockLength != 0:
-                    for result in self._sendError(
+                    for result in self._sendError(\
                             AlertDescription.decryption_failed,
                             "Encrypted data not a multiple of blocksize"):
                         yield result
                 ciphertext = bytesToString(bytes)
                 plaintext = self._readState.encContext.decrypt(ciphertext)
-                if self.version == (3, 2):  # For TLS 1.1, remove explicit IV
-                    plaintext = plaintext[self.
-                        _readState.encContext.block_size:]
+                if self.version == (3,2): #For TLS 1.1, remove explicit IV
+                    plaintext = plaintext[self._readState.encContext.block_size : ]
                 bytes = stringToBytes(plaintext)
 
                 #Check padding
                 paddingGood = True
                 paddingLength = bytes[-1]
-                if (paddingLength + 1) > len(bytes):
-                    paddingGood = False
+                if (paddingLength+1) > len(bytes):
+                    paddingGood=False
                     totalPaddingLength = 0
                 else:
-                    if self.version == (3, 0):
-                        totalPaddingLength = paddingLength + 1
-                    elif self.version in ((3, 1), (3, 2)):
-                        totalPaddingLength = paddingLength + 1
+                    if self.version == (3,0):
+                        totalPaddingLength = paddingLength+1
+                    elif self.version in ((3,1), (3,2)):
+                        totalPaddingLength = paddingLength+1
                         paddingBytes = bytes[-totalPaddingLength:-1]
                         for byte in paddingBytes:
                             if byte != paddingLength:
@@ -892,7 +898,7 @@ class TLSRecordLayer:
                 #Read MAC
                 startIndex = len(bytes) - endLength
                 endIndex = startIndex + macLength
-                checkBytes = bytes[startIndex: endIndex]
+                checkBytes = bytes[startIndex : endIndex]
 
                 #Calculate MAC
                 seqnumStr = self._readState.getSeqNumStr()
@@ -901,14 +907,14 @@ class TLSRecordLayer:
                 mac = self._readState.macContext.copy()
                 mac.update(seqnumStr)
                 mac.update(chr(recordType))
-                if self.version == (3, 0):
-                    mac.update(chr(int(len(bytes) / 256)))
-                    mac.update(chr(int(len(bytes) % 256)))
-                elif self.version in ((3, 1), (3, 2)):
+                if self.version == (3,0):
+                    mac.update( chr( int(len(bytes)/256) ) )
+                    mac.update( chr( int(len(bytes)%256) ) )
+                elif self.version in ((3,1), (3,2)):
                     mac.update(chr(self.version[0]))
                     mac.update(chr(self.version[1]))
-                    mac.update(chr(int(len(bytes) / 256)))
-                    mac.update(chr(int(len(bytes) % 256)))
+                    mac.update( chr( int(len(bytes)/256) ) )
+                    mac.update( chr( int(len(bytes)%256) ) )
                 else:
                     raise AssertionError()
                 mac.update(bytesStr)
@@ -963,22 +969,22 @@ class TLSRecordLayer:
         else:
             raise AssertionError()
 
-        if self.version == (3, 0):
+        if self.version == (3,0):
             createMACFunc = MAC_SSL
-        elif self.version in ((3, 1), (3, 2)):
+        elif self.version in ((3,1), (3,2)):
             createMACFunc = hmac.HMAC
 
-        outputLength = (macLength * 2) + (keyLength * 2) + (ivLength * 2)
+        outputLength = (macLength*2) + (keyLength*2) + (ivLength*2)
 
         #Calculate Keying Material from Master Secret
-        if self.version == (3, 0):
+        if self.version == (3,0):
             keyBlock = PRF_SSL(self.session.masterSecret,
                                concatArrays(serverRandom, clientRandom),
                                outputLength)
-        elif self.version in ((3, 1), (3, 2)):
+        elif self.version in ((3,1), (3,2)):
             keyBlock = PRF(self.session.masterSecret,
                            "key expansion",
-                           concatArrays(serverRandom, clientRandom),
+                           concatArrays(serverRandom,clientRandom),
                            outputLength)
         else:
             raise AssertionError()
@@ -991,8 +997,8 @@ class TLSRecordLayer:
         serverMACBlock = bytesToString(p.getFixBytes(macLength))
         clientKeyBlock = bytesToString(p.getFixBytes(keyLength))
         serverKeyBlock = bytesToString(p.getFixBytes(keyLength))
-        clientIVBlock = bytesToString(p.getFixBytes(ivLength))
-        serverIVBlock = bytesToString(p.getFixBytes(ivLength))
+        clientIVBlock  = bytesToString(p.getFixBytes(ivLength))
+        serverIVBlock  = bytesToString(p.getFixBytes(ivLength))
         clientPendingState.macContext = createMACFunc(clientMACBlock,
                                                       digestmod=sha)
         serverPendingState.macContext = createMACFunc(serverMACBlock,
@@ -1012,7 +1018,7 @@ class TLSRecordLayer:
             self._pendingWriteState = serverPendingState
             self._pendingReadState = clientPendingState
 
-        if self.version == (3, 2) and ivLength:
+        if self.version == (3,2) and ivLength:
             #Choose fixedIVBlock for TLS 1.1 (this is encrypted with the CBC
             #residue to create the IV for each sent block)
             self.fixedIVBlock = getRandomBytes(ivLength)
@@ -1036,7 +1042,7 @@ class TLSRecordLayer:
         #Calculate verification data
         verifyData = self._calcFinished(True)
         if self.fault == Fault.badFinished:
-            verifyData[0] = (verifyData[0] + 1) % 256
+            verifyData[0] = (verifyData[0]+1)%256
 
         #Send Finished message under new state
         finished = Finished(self.version).create(verifyData)
@@ -1046,7 +1052,7 @@ class TLSRecordLayer:
     def _getFinished(self):
         #Get and check ChangeCipherSpec
         for result in self._getMsg(ContentType.change_cipher_spec):
-            if result in (0, 1):
+            if result in (0,1):
                 yield result
         changeCipherSpec = result
 
@@ -1064,7 +1070,7 @@ class TLSRecordLayer:
         #Get and check Finished message under new state
         for result in self._getMsg(ContentType.handshake,
                                   HandshakeType.finished):
-            if result in (0, 1):
+            if result in (0,1):
                 yield result
         finished = result
         if finished.verify_data != verifyData:
@@ -1073,7 +1079,7 @@ class TLSRecordLayer:
                 yield result
 
     def _calcFinished(self, send=True):
-        if self.version == (3, 0):
+        if self.version == (3,0):
             if (self._client and send) or (not self._client and not send):
                 senderStr = "\x43\x4C\x4E\x54"
             else:
@@ -1083,13 +1089,13 @@ class TLSRecordLayer:
                                                    senderStr)
             return verifyData
 
-        elif self.version in ((3, 1), (3, 2)):
+        elif self.version in ((3,1), (3,2)):
             if (self._client and send) or (not self._client and not send):
                 label = "client finished"
             else:
                 label = "server finished"
 
-            handshakeHashes = stringToBytes(self._handshake_md5.digest() +
+            handshakeHashes = stringToBytes(self._handshake_md5.digest() + \
                                             self._handshake_sha.digest())
             verifyData = PRF(self.session.masterSecret, label, handshakeHashes,
                              12)
@@ -1104,12 +1110,13 @@ class TLSRecordLayer:
         imac_md5 = self._handshake_md5.copy()
         imac_sha = self._handshake_sha.copy()
 
-        imac_md5.update(label + masterSecretStr + '\x36' * 48)
-        imac_sha.update(label + masterSecretStr + '\x36' * 40)
+        imac_md5.update(label + masterSecretStr + '\x36'*48)
+        imac_sha.update(label + masterSecretStr + '\x36'*40)
 
-        md5Str = hashlib.md5(masterSecretStr + ('\x5c' * 48) +
+        md5Str = hashlib.md5(masterSecretStr + ('\x5c'*48) + \
                          imac_md5.digest()).digest()
-        shaStr = hashlib.sha1(masterSecretStr + ('\x5c' * 40) +
+        shaStr = hashlib.sha1(masterSecretStr + ('\x5c'*40) + \
                          imac_sha.digest()).digest()
 
         return stringToBytes(md5Str + shaStr)
+

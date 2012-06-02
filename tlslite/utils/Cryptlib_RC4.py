@@ -12,15 +12,12 @@ if cryptlibpyLoaded:
 
         def __init__(self, key):
             RC4.__init__(self, key, "cryptlib")
-            self.context = cryptlib_py.cryptCreateContext(
-                cryptlib_py.CRYPT_UNUSED, cryptlib_py.CRYPT_ALGO_RC4)
-            cryptlib_py.cryptSetAttribute(self.context,
-                 cryptlib_py.CRYPT_CTXINFO_KEYSIZE, len(key))
-            cryptlib_py.cryptSetAttributeString(self.context,
-                 cryptlib_py.CRYPT_CTXINFO_KEY, key)
+            self.context = cryptlib_py.cryptCreateContext(cryptlib_py.CRYPT_UNUSED, cryptlib_py.CRYPT_ALGO_RC4)
+            cryptlib_py.cryptSetAttribute(self.context, cryptlib_py.CRYPT_CTXINFO_KEYSIZE, len(key))
+            cryptlib_py.cryptSetAttributeString(self.context, cryptlib_py.CRYPT_CTXINFO_KEY, key)
 
         def __del__(self):
-            cryptlib_py.cryptDestroyContext(self.context)
+             cryptlib_py.cryptDestroyContext(self.context)
 
         def encrypt(self, plaintext):
             bytes = stringToBytes(plaintext)

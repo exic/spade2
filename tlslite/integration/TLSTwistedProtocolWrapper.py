@@ -29,7 +29,6 @@ class _FakeSocket:
         self.data = self.data[numBytes:]
         return returnData
 
-
 class TLSTwistedProtocolWrapper(ProtocolWrapper, AsyncStateMachine):
     """This class can wrap Twisted protocols to add TLS support.
 
@@ -156,6 +155,7 @@ class TLSTwistedProtocolWrapper(ProtocolWrapper, AsyncStateMachine):
             ProtocolWrapper.connectionLost(self, reason)
             self.connectionLostCalled = True
 
+
     def outConnectEvent(self):
         ProtocolWrapper.connectionMade(self)
 
@@ -167,6 +167,7 @@ class TLSTwistedProtocolWrapper(ProtocolWrapper, AsyncStateMachine):
             ProtocolWrapper.loseConnection(self)
         else:
             ProtocolWrapper.dataReceived(self, data)
+
 
     def setServerHandshakeOp(self, **args):
         self.tlsStarted = True

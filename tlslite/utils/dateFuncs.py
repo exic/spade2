@@ -3,8 +3,6 @@ import os
 
 #Functions for manipulating datetime objects
 #CCYY-MM-DDThh:mm:ssZ
-
-
 def parseDateClass(s):
     year, month, day = s.split("-")
     day, tail = day[:2], day[2:]
@@ -24,7 +22,7 @@ if os.name != "java":
 
     def printDateClass(d):
         #Split off fractional seconds, append 'Z'
-        return d.isoformat().split(".")[0] + "Z"
+        return d.isoformat().split(".")[0]+"Z"
 
     def getNow():
         return datetime.utcnow()
@@ -50,18 +48,18 @@ else:
     def createDateClass(year, month, day, hour, minute, second):
         c = java.util.Calendar.getInstance()
         c.setTimeZone(java.util.TimeZone.getTimeZone("UTC"))
-        c.set(year, month - 1, day, hour, minute, second)
+        c.set(year, month-1, day, hour, minute, second)
         return c
 
     def printDateClass(d):
         return "%04d-%02d-%02dT%02d:%02d:%02dZ" % \
-        (d.get(d.YEAR), d.get(d.MONTH) + 1, d.get(d.DATE),
+        (d.get(d.YEAR), d.get(d.MONTH)+1, d.get(d.DATE), \
         d.get(d.HOUR_OF_DAY), d.get(d.MINUTE), d.get(d.SECOND))
 
     def getNow():
         c = java.util.Calendar.getInstance()
         c.setTimeZone(java.util.TimeZone.getTimeZone("UTC"))
-        c.get(c.HOUR)  # force refresh?
+        c.get(c.HOUR) #force refresh?
         return c
 
     def getHoursFromNow(hours):

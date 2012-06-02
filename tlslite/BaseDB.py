@@ -3,7 +3,6 @@
 import anydbm
 import thread
 
-
 class BaseDB:
     def __init__(self, filename, type):
         self.type = type
@@ -20,7 +19,7 @@ class BaseDB:
         @raise anydbm.error: If there's a problem creating the database.
         """
         if self.filename:
-            self.db = anydbm.open(self.filename, "n")  # raises anydbm.error
+            self.db = anydbm.open(self.filename, "n") #raises anydbm.error
             self.db["--Reserved--type"] = self.type
             self.db.sync()
         else:
@@ -34,7 +33,7 @@ class BaseDB:
         """
         if not self.filename:
             raise ValueError("Can only open on-disk databases")
-        self.db = anydbm.open(self.filename, "w")  # raises anydbm.error
+        self.db = anydbm.open(self.filename, "w") #raises anydbm.error
         try:
             if self.db["--Reserved--type"] != self.type:
                 raise ValueError("Not a %s database" % self.type)
@@ -95,7 +94,7 @@ class BaseDB:
 
         self.lock.acquire()
         try:
-            return username in self.db
+            return self.db.has_key(username)
         finally:
             self.lock.release()
 

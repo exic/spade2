@@ -62,7 +62,7 @@ class HTTPTLSConnection(HTTPBaseTLSConnection, ClientHelper):
                  cryptoID=None, protocol=None,
                  x509Fingerprint=None,
                  x509TrustList=None, x509CommonName=None,
-                 settings=None):
+                 settings = None):
         """Create a new HTTPTLSConnection.
 
         For client authentication, use one of these argument

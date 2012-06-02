@@ -1,5 +1,4 @@
 
-
 class IntegrationHelper:
 
     def __init__(self,
@@ -8,7 +7,7 @@ class IntegrationHelper:
               cryptoID=None, protocol=None,
               x509Fingerprint=None,
               x509TrustList=None, x509CommonName=None,
-              settings=None):
+              settings = None):
 
         self.username = None
         self.password = None
@@ -45,7 +44,7 @@ class IntegrationHelper:
 
         #Authenticate the server based on its cryptoID or fingerprint
         if sharedKey and (cryptoID or protocol or x509Fingerprint):
-            raise ValueError("Can't use shared keys with other forms of"
+            raise ValueError("Can't use shared keys with other forms of"\
                              "authentication")
 
         self.checker = Checker(cryptoID, protocol, x509Fingerprint,

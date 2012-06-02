@@ -118,6 +118,7 @@ class XMLRPCTransport(xmlrpclib.Transport, ClientHelper):
                  x509TrustList, x509CommonName,
                  settings)
 
+
     def make_connection(self, host):
         # create a HTTPS connection object from a host descriptor
         host, extra_headers, x509 = self.get_host_info(host)

@@ -5,7 +5,6 @@ A helper class for using TLS Lite with stdlib clients
 
 from tlslite.Checker import Checker
 
-
 class ClientHelper:
     """This is a helper class used to integrate TLS Lite with various
     TLS clients (e.g. poplib, smtplib, httplib, etc.)"""
@@ -16,7 +15,7 @@ class ClientHelper:
               cryptoID=None, protocol=None,
               x509Fingerprint=None,
               x509TrustList=None, x509CommonName=None,
-              settings=None):
+              settings = None):
         """
         For client authentication, use one of these argument
         combinations:
@@ -135,7 +134,7 @@ class ClientHelper:
 
         #Authenticate the server based on its cryptoID or fingerprint
         if sharedKey and (cryptoID or protocol or x509Fingerprint):
-            raise ValueError("Can't use shared keys with other forms of"
+            raise ValueError("Can't use shared keys with other forms of"\
                              "authentication")
 
         self.checker = Checker(cryptoID, protocol, x509Fingerprint,

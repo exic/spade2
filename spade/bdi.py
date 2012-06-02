@@ -6,23 +6,14 @@ import types
 import Agent
 import Behaviour
 
-
-class PreConditionFailed (Exception):
-    pass
-
-
-class PostConditionFailed(Exception):
-    pass
-
-
-class ServiceFailed(Exception):
-    pass
-
+class PreConditionFailed (Exception): pass
+class PostConditionFailed(Exception): pass
+class ServiceFailed(Exception): pass
 
 class Goal:
-
-    types = ["achieve", "mantain", "cease", "query", "perform"]
-
+    
+    types = ["achieve","mantain","cease","query","perform"]
+    
     def __init__(self, expression, typ="achieve"):
         self.type = typ
         self.expression = expression
@@ -34,94 +25,84 @@ class Goal:
     def testConflict(self, goal):
         # No conflict test at the moment
         return False
-
+        
     def __str__(self):
         if self.unreachable:
-            return "UNREACHABLE(" + str(self.expression) + ")"
+            return "UNREACHABLE("+str(self.expression)+")"
         else:
             return str(self.expression)
 
     def __repr__(self):
-        return self.__str__()
-
+       return self.__str__()
 
 class Service:
     def __init__(self, P=None, Q=None):
-        self.P = P  # precondition
-        self.Q = Q  # postcontidion
-
+        self.P = P #precondition
+        self.Q = Q #postcontidion
+        
         self.myAgent = None
+ 
+    def setP(self, P): self.P = P
 
-    def setP(self, P):
-        self.P = P
+    def setQ(self, Q): self.Q = Q
 
-    def setQ(self, Q):
-        self.Q = Q
+    def getP(self): return self.P
 
-    def getP(self):
-        return self.P
-
-    def getQ(self):
-        return self.Q
+    def getQ(self): return self.Q
 
     def reward(self):
         self.trust -= 1
-        if self.trust < 0:
-            self.trust = 0
+        if self.trust<0: self.trust=0
         #print "Service "+self.name+" rewarded!"
 
     def punish(self):
         self.trust += 10
-        if self.trust > 1000:
-            self.trust = 1000
+        if self.trust>1000: self.trust=1000
         #print "Service "+self.name+" punished!"
-
+        
     def run(self):
         raise NotImplementedError
-
-    def addBelieve(self, sentence):
+        
+    def addBelieve(self,sentence):
         if self.myAgent:
             self.myAgent.addBelieve(sentence)
         else:
             raise NotImplementedError
-
-    def removeBelieve(self, sentence):
+    def removeBelieve(self,sentence):
         if self.myAgent:
             self.myAgent.removeBelieve(sentence)
         else:
             raise NotImplementedError
-
-    def askBelieve(self, sentence):
+    def askBelieve(self,sentence):
         if self.myAgent:
             return self.myAgent.askBelieve(sentence)
         else:
             raise NotImplementedError
-
+            
     def __str__(self):
-        return "[P:" + str(self.P) + " Q:" + str(self.Q) + "]"
-
+        return "[P:"+str(self.P)+" Q:"+str(self.Q)+"]"
 
 class Plan:
     def __init__(self, P=None, Q=None):
         self.P = P
         self.Q = Q
-
+        
         self.myAgent = None
-
+        
         self.services = []
         self.next = None
-
+        
     def addOwner(self, owner):
         self.myAgent = owner
         for service in self.services:
             service.myAgent = owner
-
+        
     def appendService(self, service):
-        if len(self.services) > 0:
-            lastService = self.services[len(self.services) - 1]
+        if len(self.services)>0:
+            lastService = self.services[len(self.services)-1]
             out = copy(lastService.outputs.keys()).sort()
             ins = copy(service.inputs.keys()).sort()
-
+        
             if out == ins:
                 if self.myAgent:
                     service.myAgent = self.myAgent
@@ -130,11 +111,11 @@ class Plan:
             if self.myAgent:
                 service.myAgent = self.myAgent
             self.services.append(service)
-
+        
     def nextService(self):
-        if self.next == None:
+        if self.next==None:
             self.next = 0
-        elif self.next == len(self.services) - 1:
+        elif self.next == len(self.services)-1:
             return None
         else:
             outs = self.services[self.next].outputs
@@ -147,53 +128,52 @@ class Plan:
             raise PreconditionFailed()
 
     def __str__(self):
-        s = "Plan(P:" + str(self.P) + " Q:" + str(self.Q) + ") => "
+        s = "Plan(P:"+str(self.P)+" Q:"+str(self.Q)+") => "
         for i in range(len(self.services)):
-            s += "S" + str(i) + ":" + str(self.services[i]) + ", "
+            s+= "S"+str(i)+":"+str(self.services[i])+", "
         return s
 
-
 class BDIAgent(Agent.Agent):
-
-    def __init__(self, agentjid, password, port=5222, debug=[], p2p=False):
-        Agent.Agent.__init__(self, agentjid, password, port=port,
-             debug=debug, p2p=p2p)
-
-        self.goals = []  # active goals
-        self.kb = FolKB()  # knowledge base
-        self.plans = []  # plan library
-        self.intentions = []  # selected plans for execution
-        self.services = []  # services offered by the agent
-
-        self.defaultMailbox = []
-
+    
+    def __init__(self,agentjid, password, port=5222, debug=[], p2p=False):
+        Agent.Agent.__init__(self,agentjid, password, port=port, debug=debug, p2p=p2p)
+        
+        self.goals           = [] # active goals
+        self.kb              = FolKB() # knowledge base
+        self.plans           = [] # plan library
+        self.intentions      = [] # selected plans for execution
+        self.services        = [] # services offered by the agent
+        
+        self.defaultMailbox  = []
+        
         self._needDeliberate = True
-
+        
+        
     def addBelieve(self, sentence):
-        if isinstance(sentence, types.StringType):
+        if isinstance(sentence,types.StringType):
             self.kb.tell(expr(sentence))
         else:
             self.kb.tell(sentence)
         self._needDeliberate = True
         self.newBelieveCB(sentence)
-
+        
     def removeBelieve(self, sentence):
-        if isinstance(sentence, types.StringType):
+        if isinstance(sentence,types.StringType):
             self.kb.retract(expr(sentence))
         else:
             self.kb.retract(sentence)
         self._needDeliberate = True
 
     def askBelieve(self, sentence):
-        if isinstance(sentence, types.StringType):
+        if isinstance(sentence,types.StringType):
             return self.kb.ask(expr(sentence))
         else:
             return self.kb.ask(sentence)
-
+            
     def addPlan(self, plan):
         plan.addOwner(self)
         self.plans.append(plan)
-        self.DEBUG("Plan added: " + str(plan), "ok")
+        self.DEBUG("Plan added: "+str(plan),"ok")
 
     def addGoal(self, goal):
         #First add the goal if no conflicts
@@ -203,25 +183,25 @@ class BDIAgent(Agent.Agent):
                 if g.testConflict(goal):
                     conflict = True
                     break
-            if not conflict and self.askBelieve(goal.expression) == False:
-                self.DEBUG("Goal added: " + str(goal), "ok")
+            if not conflict and self.askBelieve(goal.expression)==False:
+                self.DEBUG("Goal added: "+str(goal),"ok")
                 self.goals.append(goal)
-
+            
     def selectIntentions(self):
-        for goal in self.goals:  # deliberate over goals
+        for goal in self.goals: #deliberate over goals
             if not goal.selected: #if the goal is not already selected for execution
                 self.DEBUG("Found not selected goal")
-                for plan in self.plans:  # search for a plan
-                    self.DEBUG("Compare plan.Q " + str(
-                        plan.Q) + " with goal " + str(goal.expression), "ok")
+                for plan in self.plans: #search for a plan
+                    self.DEBUG("Compare plan.Q " + str(plan.Q) + " with goal " + str(goal.expression),"ok")
                     if plan.Q == goal.expression: #plan must pursue for the goal
                         #self.DEBUG("askBelieve plan.P -> " + str(self.askBelieve(plan.P)))
                         if self.askBelieve(plan.P)!=False: #preconditions of the plan must be acomplished
                             self.intentions.append(plan)   #instantiate plan as intention
                             self.intentionSelectedCB(plan)
-                            goal.selected = True  # flag goal as selected
-                            break  # stop searching plans for this goal
-
+                            goal.selected = True #flag goal as selected
+                            break #stop searching plans for this goal
+        
+        
     def run(self):
         """
         periodic agent execution
@@ -249,12 +229,12 @@ class BDIAgent(Agent.Agent):
             try:
                 #get and process all messages
                 self.getMessages()
-
+                
                 #deliberate about current goals
                 #self.DEBUG("deliberate about current goals")
                 if self._needDeliberate:
                     for goal in copy(self.goals):
-                        if self.askBelieve(goal.expression) != False:
+                        if self.askBelieve(goal.expression)!=False:
                             if goal.persistent:
                                 goal.selected = False
                             else:
@@ -264,20 +244,19 @@ class BDIAgent(Agent.Agent):
                     #    if self.bk.ask(intention.Q):
                     #        self.intentions.remove(intention)
                     self._needDeliberate = False
-
+                    
                 #select intentions
                 #self.DEBUG("select intentions")
                 self.selectIntentions()
-
+                
                 #run intentions
                 #self.DEBUG("run intentions")
                 for intention in copy(self.intentions):
                     service = intention.nextService()
-
-                    if service == None:  # intention has finished
-                        self.DEBUG(
-                            "Intention finished: " + str(intention), "ok")
-                        self.intentions.remove(intention)  # delete intention
+                    
+                    if service == None: #intention has finished
+                        self.DEBUG("Intention finished: "+ str(intention),"ok")
+                        self.intentions.remove(intention) #delete intention
                         if self.askBelieve(intention.Q)==False: #check its postcondition
                             raise PostConditionFailed()
                         else:
@@ -289,20 +268,17 @@ class BDIAgent(Agent.Agent):
                                         self.goals.remove(goal)
                     else:
                         service.run()
-                        if self.askBelieve(service.Q) == False:
+                        if self.askBelieve(service.Q)==False:
                             raise PostConditionFailed()
-                        else:
-                            self.serviceCompletedCB(service)
-                    if self._needDeliberate:
-                        break
-
+                        else: self.serviceCompletedCB(service)
+                    if self._needDeliberate: break
+                
             except Exception, e:
-                self.DEBUG("Agent " + self.getName() +
-                     " Exception in run: " + str(e), "err")
+                self.DEBUG("Agent " + self.getName() + " Exception in run: " + str(e), "err")
                 self._kill()
 
         self._shutdown()
-
+        
     def getMessages(self):
         #Check for queued messages
         proc = False
@@ -332,17 +308,14 @@ class BDIAgent(Agent.Agent):
         #callback executed when a new intention is selected for execution
         #must be overloaded
         pass
-
     def goalCompletedCB(self, goal=None):
         #callback executed when a goal is completed succesfully
         #must be overloaded
         pass
-
     def serviceCompletedCB(self, service=None):
         #callback executed when a service is completed succesfully
         #must be overloaded
         pass
-
     def newBelieveCB(self, believe=None):
         #callback executed when a believe is added to the knowledge base
         #must be overloaded
