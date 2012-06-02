@@ -2,7 +2,6 @@
 # -*- coding: cp1252 -*-
 import sys
 
-
 from spade import ACLMessage
 from spade import Agent
 from spade import AMS
@@ -21,7 +20,6 @@ from spade import SL0Parser
 from spade import XMLCodec
 from spade import SpadeConfigParser 
 
-    
 class SpadeBackend:
     """
     Runs the platform.
@@ -43,7 +41,7 @@ class SpadeBackend:
             agent = agentClass(jid, passwd, server, port)
         agent.start()
         return agent
-    
+
     def __init__(self, configfilename="/etc/spade/spade.xml"):
         parser = SpadeConfigParser.ConfigParser()
         self.config = parser.parse(configfilename)
@@ -56,7 +54,7 @@ class SpadeBackend:
         #TODO: this should be configurable
         self.acc = self.runAgent(self.config, "acc", Platform.SpadePlatform)
         #self.acc._debug=True
-	self.ams = self.runAgent(self.config, "ams", AMS.AMS)
+        self.ams = self.runAgent(self.config, "ams", AMS.AMS)
         #self.ams.DEBUG = self.acc.DEBUG
         self.df = self.runAgent(self.config, "df", DF.DF)
         #self.df.DEBUG = self.acc.DEBUG
@@ -64,18 +62,18 @@ class SpadeBackend:
 
     def shutdown(self):
         if self.df:
-		    self.df.stop()
-		    #del self.df
+            self.df.stop()
+            #del self.df
         if self.ams: 
-		    self.ams.stop()
-		    #del self.ams
+            self.ams.stop()
+            #del self.ams
         if self.acc:
-		    self.acc.stop()
-		    #del self.acc
-		    
+            self.acc.stop()
+            #del self.acc
+
     def DEBUG(self,component="",msg="",typ=""):
-	    self.acc.DEBUG(msg,typ,component)
+            self.acc.DEBUG(msg,typ,component)
 
 if __name__ ==  "__main__":
-	p = SpadeBackend()
-	p.start()
+        p = SpadeBackend()
+        p.start()
