@@ -4,6 +4,7 @@ from constants import CertificateType
 from utils import cryptomath
 from utils import cipherfactory
 
+
 class HandshakeSettings:
     """This class encapsulates various parameters that can be used with
     a TLS handshake.
@@ -79,8 +80,8 @@ class HandshakeSettings:
         self.cipherImplementations = ["cryptlib", "openssl", "pycrypto",
                                       "python"]
         self.certificateTypes = ["x509", "cryptoID"]
-        self.minVersion = (3,0)
-        self.maxVersion = (3,2)
+        self.minVersion = (3, 0)
+        self.maxVersion = (3, 2)
 
     #Filters out options that are not supported
     def _filter(self):
@@ -95,36 +96,36 @@ class HandshakeSettings:
 
         if not cipherfactory.tripleDESPresent:
             other.cipherNames = [e for e in self.cipherNames if e != "3des"]
-        if len(other.cipherNames)==0:
+        if len(other.cipherNames) == 0:
             raise ValueError("No supported ciphers")
 
         try:
             import cryptoIDlib
         except ImportError:
-            other.certificateTypes = [e for e in self.certificateTypes \
+            other.certificateTypes = [e for e in self.certificateTypes
                                       if e != "cryptoID"]
-        if len(other.certificateTypes)==0:
+        if len(other.certificateTypes) == 0:
             raise ValueError("No supported certificate types")
 
         if not cryptomath.cryptlibpyLoaded:
-            other.cipherImplementations = [e for e in \
+            other.cipherImplementations = [e for e in
                 self.cipherImplementations if e != "cryptlib"]
         if not cryptomath.m2cryptoLoaded:
-            other.cipherImplementations = [e for e in \
+            other.cipherImplementations = [e for e in
                 other.cipherImplementations if e != "openssl"]
         if not cryptomath.pycryptoLoaded:
-            other.cipherImplementations = [e for e in \
+            other.cipherImplementations = [e for e in
                 other.cipherImplementations if e != "pycrypto"]
-        if len(other.cipherImplementations)==0:
+        if len(other.cipherImplementations) == 0:
             raise ValueError("No supported cipher implementations")
 
-        if other.minKeySize<512:
+        if other.minKeySize < 512:
             raise ValueError("minKeySize too small")
-        if other.minKeySize>16384:
+        if other.minKeySize > 16384:
             raise ValueError("minKeySize too large")
-        if other.maxKeySize<512:
+        if other.maxKeySize < 512:
             raise ValueError("maxKeySize too small")
-        if other.maxKeySize>16384:
+        if other.maxKeySize > 16384:
             raise ValueError("maxKeySize too large")
         for s in other.cipherNames:
             if s not in ("aes256", "aes128", "rc4", "3des"):
@@ -139,10 +140,10 @@ class HandshakeSettings:
         if other.minVersion > other.maxVersion:
             raise ValueError("Versions set incorrectly")
 
-        if not other.minVersion in ((3,0), (3,1), (3,2)):
+        if not other.minVersion in ((3, 0), (3, 1), (3, 2)):
             raise ValueError("minVersion set incorrectly")
 
-        if not other.maxVersion in ((3,0), (3,1), (3,2)):
+        if not other.maxVersion in ((3, 0), (3, 1), (3, 2)):
             raise ValueError("maxVersion set incorrectly")
 
         return other

@@ -12,10 +12,12 @@ if os.name != "java":
 
     def createByteArraySequence(seq):
         return array.array('B', seq)
+
     def createByteArrayZeros(howMany):
         return array.array('B', [0] * howMany)
+
     def concatArrays(a1, a2):
-        return a1+a2
+        return a1 + a2
 
     def bytesToString(bytes):
         return bytes.tostring()
@@ -26,13 +28,18 @@ if os.name != "java":
         return bytes
 
     def numBits(n):
-        if n==0:
+        if n == 0:
             return 0
-        return int(math.floor(math.log(n, 2))+1)
+        return int(math.floor(math.log(n, 2)) + 1)
 
-    class CertChainBase: pass
-    class SelfTestBase: pass
-    class ReportFuncBase: pass
+    class CertChainBase:
+        pass
+
+    class SelfTestBase:
+        pass
+
+    class ReportFuncBase:
+        pass
 
     #Helper functions for working with sets (from Python 2.3)
     def iterSet(set):
@@ -49,7 +56,8 @@ if os.name != "java":
     import traceback
 
     def formatExceptionTrace(e):
-        newStr = "".join(traceback.format_exception(sys.exc_type, sys.exc_value, sys.exc_traceback))
+        newStr = "".join(traceback.format_exception(sys.exc_type,
+             sys.exc_value, sys.exc_traceback))
         return newStr
 
 else:
@@ -61,13 +69,15 @@ else:
     BaseException = java.lang.Exception
 
     def createByteArraySequence(seq):
-        if isinstance(seq, type("")): #If it's a string, convert
+        if isinstance(seq, type("")):  # If it's a string, convert
             seq = [ord(c) for c in seq]
         return jarray.array(seq, 'h') #use short instead of bytes, cause bytes are signed
+
     def createByteArrayZeros(howMany):
         return jarray.zeros(howMany, 'h') #use short instead of bytes, cause bytes are signed
+
     def concatArrays(a1, a2):
-        l = list(a1)+list(a2)
+        l = list(a1) + list(a2)
         return createByteArraySequence(l)
 
     #WAY TOO SLOW - MUST BE REPLACED------------
@@ -82,24 +92,28 @@ else:
     #WAY TOO SLOW - MUST BE REPLACED------------
 
     def numBits(n):
-        if n==0:
+        if n == 0:
             return 0
-        n= 1L * n; #convert to long, if it isn't already
+        n = 1L * n
+        #convert to long, if it isn't already
         return n.__tojava__(java.math.BigInteger).bitLength()
 
     #This properly creates static methods for Jython
     class staticmethod:
-        def __init__(self, anycallable): self.__call__ = anycallable
+        def __init__(self, anycallable):
+            self.__call__ = anycallable
 
     #Properties are not supported for Jython
     class property:
-        def __init__(self, anycallable): pass
+        def __init__(self, anycallable):
+            pass
 
     #True and False have to be specially defined
     False = 0
     True = 1
 
-    class StopIteration(Exception): pass
+    class StopIteration(Exception):
+        pass
 
     def enumerate(collection):
         return zip(range(len(collection)), collection)
@@ -132,7 +146,7 @@ else:
                     return False
             return True
 
-        def __nonzero__( self):
+        def __nonzero__(self):
             return len(self.values.keys())
 
         def __contains__(self, e):
@@ -177,13 +191,13 @@ else:
         #return JCE_SHA1(s)
         return sha.sha(s)
 
-
     #Adjust the string to an array of bytes
     def stringToJavaByteArray(s):
         bytes = jarray.zeros(len(s), 'b')
         for count, c in enumerate(s):
             x = ord(c)
-            if x >= 128: x -= 256
+            if x >= 128:
+                x -= 256
             bytes[count] = x
         return bytes
 
@@ -191,5 +205,6 @@ else:
     import traceback
 
     def formatExceptionTrace(e):
-        newStr = "".join(traceback.format_exception(sys.exc_type, sys.exc_value, sys.exc_traceback))
+        newStr = "".join(traceback.format_exception(sys.exc_type,
+             sys.exc_value, sys.exc_traceback))
         return newStr

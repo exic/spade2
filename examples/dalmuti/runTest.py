@@ -16,29 +16,28 @@ host = "127.0.0.1"
 N = 5
 R = 1
 
-ag = gameManager("dalmuti@"+host, "ElGranDalmuti")
+ag = gameManager("dalmuti@" + host, "ElGranDalmuti")
 ag.start()
-ag.setOptions( N, R )
+ag.setOptions(N, R)
 
 players = []
 
 for j in range(N):
-    p = jugador.jugador("player"+str(j)+"@"+host, "secret")
+    p = jugador.jugador("player" + str(j) + "@" + host, "secret")
     p.start()
     players.append(p)
-    print "Added player "+ str(j)
+    print "Added player " + str(j)
 
 
-alive =True
+alive = True
 while alive:
-	try:
-	    time.sleep(1)
-	except KeyboardInterrupt:
-	    alive=False
+    try:
+        time.sleep(1)
+    except KeyboardInterrupt:
+        alive = False
 ag.stop()
 for b in players:
     b.stop()
-        
+
 import sys
 sys.exit(0)
-

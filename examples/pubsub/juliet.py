@@ -10,9 +10,11 @@ from spade.Agent import Agent
 from spade.Behaviour import OneShotBehaviour
 #from spade.pubsub import PubSub #, PubSubMessageTemplate
 
+
 def asserteq(one, two):
     print one == two, '   ', one, ' == ', two
     assert one == two, 'not equal'
+
 
 class MyAgent(Agent):
     class MyBehav(OneShotBehaviour):
@@ -27,19 +29,26 @@ class MyAgent(Agent):
                 while self.myAgent.subscribeToEvent('ExistsNode') == ('error', ['item-not-found']):
                     time.sleep(1)
 
-                asserteq( self.myAgent.subscribeToEvent('ExistsNode'), ('error', ['not-authorized', 'presence-subscription-required']))
-                asserteq( self.myAgent.unsubscribeFromEvent('ExistsNode'), ('error', ['unexpected-request', 'not-subscribeToEventd']))
-                asserteq( self.myAgent.deleteEvent('ExistsNode'), ('error', ['forbidden']))
-                asserteq( self.myAgent.createEvent('ExistsNode'), ('error', ['conflict']))
-                asserteq( self.myAgent.publishEvent('ExistsNode', Node(tag='foo')), ('error', ['forbidden']))
+                asserteq(self.myAgent.subscribeToEvent(
+                                        'ExistsNode'), ('error', ['not-authorized', 'presence-subscription-required']))
+                asserteq(self.myAgent.
+                    unsubscribeFromEvent('ExistsNode'), ('error', ['unexpected-request', 'not-subscribeToEventd']))
+                asserteq(self.myAgent.deleteEvent(
+                                        'ExistsNode'), ('error', ['forbidden']))
+                asserteq(self.myAgent.createEvent(
+                                        'ExistsNode'), ('error', ['conflict']))
+                asserteq(self.myAgent.publishEvent(
+                                        'ExistsNode', Node(tag='foo')), ('error', ['forbidden']))
 
-                self.myAgent.setSocialItem('romeo@'+self.myAgent.server)
-                self.myAgent._socialnetwork['romeo@'+self.myAgent.server].subscribe()
+                self.myAgent.setSocialItem('romeo@' + self.myAgent.server)
+                self.myAgent._socialnetwork['romeo@' + self.
+                    myAgent.server].subscribe()
 
                 time.sleep(10)
                 print 'Sleeping 10 seconds...'
 
-                asserteq( self.myAgent.subscribeToEvent('ExistsNode'), ('ok', []))
+                asserteq(self.myAgent.subscribeToEvent(
+                                        'ExistsNode'), ('ok', []))
                 #TODO: Check that the last published item is sent after subscription.
 
                 #TODO: Check that the new item published by Romeo is received too.
@@ -47,14 +56,17 @@ class MyAgent(Agent):
                 time.sleep(5)
                 print 'Sleeping 5 seconds...'
 
-                asserteq( self.myAgent.unsubscribeFromEvent('ExistsNode'), ('ok', []))
-                asserteq( self.myAgent.subscribeToEvent('ExistsNode'), ('ok', [])) # OK
+                asserteq(self.myAgent.
+                    unsubscribeFromEvent('ExistsNode'), ('ok', []))
+                asserteq(self.myAgent.subscribeToEvent(
+                                        'ExistsNode'), ('ok', []))  # OK
                 #TODO: Check that the last published item is sent after subscription.
-                asserteq( self.myAgent.subscribeToEvent('ExistsNode', jid='romeo@'+self.myAgent.server), ('error', ['bad-request', 'invalid-jid']))
+                asserteq(self.myAgent.subscribeToEvent(
+                                        'ExistsNode', jid='romeo@'+self.myAgent.server), ('error', ['bad-request', 'invalid-jid']))
 
                 #TODO: Check that the notification of node deletion is received.
 
-            except Exception,e:
+            except Exception, e:
                 print e
 
         def onEnd(self):
@@ -73,16 +85,15 @@ if __name__ == "__main__":
         host = "127.0.0.1"
     else:
         host = sys.argv[1]
-    a = MyAgent("juliet@"+host, "secret")
+    a = MyAgent("juliet@" + host, "secret")
     a.wui.start()
     a.setDebugToScreen()
     a.start()
     import time
     while True:
-         try:
+        try:
             time.sleep(1)
-         except KeyboardInterrupt:
-             break
+        except KeyboardInterrupt:
+            break
     a.stop()
     sys.exit(0)
-

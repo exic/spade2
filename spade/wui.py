@@ -14,38 +14,40 @@ import socket
 
 from threading import Thread
 
+
 class WUI(Thread):
     def __init__(self, owner):
         Thread.__init__(self)
         self.owner = owner
         self.httpd = None
         self.port = 8009
-        self.template_path = "" 
+        self.template_path = ""
         # Try to get SPADE's default template path
-        tpath = os.path.realpath(pyratemp.__file__)  # /Users/foo/devel/trunk/spade
-        tpath = tpath.rsplit(os.sep,1)  # ["/Users/foo/devel/trunk", "spade"]
-        self.spade_path = tpath[0]+os.sep+os.pardir
+        tpath = os.path.realpath(pyratemp.__file__)
+              # /Users/foo/devel/trunk/spade
+        tpath = tpath.rsplit(os.sep, 1)  # ["/Users/foo/devel/trunk", "spade"]
+        self.spade_path = tpath[0] + os.sep + os.pardir
         #self.owner.DEBUG("SPADE path: " + self.spade_path,"warn")
-        
+
         self.controllers = {}
-        
+
         self.is_running = False
-        
-        
+
     def run(self):
 
         while not self.httpd:
-             try:
-                 self.httpd = SocketServer.ThreadingTCPServer(('', self.port), WUIHandler)
-                 self.httpd.owner = self
-                 self.httpd.timeout = 1
-                 #print "WebUserInterface serving at port "+str(self.port)
-                 self.notifyAMS()
-             except Exception as e:
-                 self.owner.DEBUG("Error installing server: %s, trying different port", e)
-                 self.port = random.randint(1024,65536)
-                 
-        self.owner.DEBUG("WebUserInterface serving at port "+str(self.port))
+            try:
+                self.httpd = SocketServer.ThreadingTCPServer(('', self.port), WUIHandler)
+                self.httpd.owner = self
+                self.httpd.timeout = 1
+                #print "WebUserInterface serving at port "+str(self.port)
+                self.notifyAMS()
+            except Exception as e:
+                self.owner.DEBUG(
+                    "Error installing server: %s, trying different port", e)
+                self.port = random.randint(1024, 65536)
+
+        self.owner.DEBUG("WebUserInterface serving at port " + str(self.port))
         self.registerController("error404", self.error404)
         self.registerController("error501", self.error501)
         self.registerController("error503", self.error503)
@@ -56,43 +58,47 @@ class WUI(Thread):
 
     def isRunning(self):
         return self.is_running
-        
+
     def stop(self):
         self.is_running = False
-        
+
     def setPort(self, port):
         self.port = port
-        
-    def setTemplatePath(self,path):
+
+    def setTemplatePath(self, path):
         self.template_path = os.path.realpath(path)
-        
+
     def registerController(self, name, controller):
         self.controllers[name] = controller
-            
+
     def unregisterController(self, name):
         del self.controllers[name]
-    
+
     def notifyAMS(self):
         """Notify AMS of current AWUI URL"""
         #return
         from spade.AMS import AmsAgentDescription
         aad = AmsAgentDescription()
         aid = self.owner.getAID()
-        aid.addAddress("awui://"+str(socket.gethostbyname(socket.gethostname()))+":"+str(self.port))
+        aid.addAddress("awui://" + str(socket.gethostbyname(socket.
+            gethostname())) + ":" + str(self.port))
         aad.setAID(aid)
         self.owner.modifyAgent(aad)
-        
+
     #Controllers
 
     def error404(self):
-        return "404.pyra", {"template":"404.pyra"}
+        return "404.pyra", {"template": "404.pyra"}
+
     def error501(self):
-        return "501.pyra", {"template":"501.pyra", "error":""}
+        return "501.pyra", {"template": "501.pyra", "error": ""}
+
     def error503(self):
-        return "503.pyra", {"page":"503.pyra"}
+        return "503.pyra", {"page": "503.pyra"}
+
 
 class WUIHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-    
+
     def getPage(self, req):
         """
         Return the page name from a raw GET line
@@ -120,7 +126,8 @@ class WUIHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                             d[var[0]] = [d[var[0]]]
                             d[var[0]].append(urllib.unquote_plus(var[1]))
                     else:
-                        d[urllib.unquote_plus(var[0])] = urllib.unquote_plus(var[1])
+                        d[urllib.unquote_plus(var[
+                            0])] = urllib.unquote_plus(var[1])
                 else:
                     d[urllib.unquote_plus(var[0])] = ""
         except:
@@ -139,7 +146,6 @@ class WUIHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
         self.do_GET()
 
-
     def do_GET(self):
         """
         GET petitions handler
@@ -149,24 +155,27 @@ class WUIHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         request = self.raw_requestline.split()
         page = self.getPage(request[1])
 
-        if page == "/": page = "/index"
+        if page == "/":
+            page = "/index"
 
-        if page.startswith("/"): page = page [1:]
+        if page.startswith("/"):
+            page = page[1:]
 
         try:
-            vars = self.getVars("?"+self._POST_REQ)
+            vars = self.getVars("?" + self._POST_REQ)
         except:
             vars = self.getVars(request[1])
-        
-        s_vars=""
-        for k,v in vars.items():
+
+        s_vars = ""
+        for k, v in vars.items():
             if k:
                 v = str(v)
                 if not v.startswith('"') and not v.startswith("'") and not v.startswith("["):
-                    v = '"'+ v +'"'
-                s_vars+= str(k) + "=" + v +","
-        if s_vars.endswith(","): s_vars = s_vars[:-1]
-            
+                    v = '"' + v + '"'
+                s_vars += str(k) + "=" + v + ","
+        if s_vars.endswith(","):
+            s_vars = s_vars[:-1]
+
         # Switch page
         #if page.endswith("css"):
         if page.endswith(".css") or page.endswith(".png") or page.endswith(".html") or page.endswith(".js"):
@@ -185,68 +194,72 @@ class WUIHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 self.copyfile(f, self.wfile)
                 f.close()
             except:
-                self.server.owner.owner.DEBUG("Could not open file: "+ page, "err")
-        
+                self.server.owner.owner.DEBUG(
+                    "Could not open file: " + page, "err")
+
         else:
             try:
                 # Check wether controller exists
                 # Get the first section of the URL path (e.g. the "admin" of "admin/foo/bar")
-                eval("self.server.owner.controllers['"+str(page)+"']")
+                eval("self.server.owner.controllers['" + str(page) + "']")
             except:
                 # The controller doesn't exist
                 _exception = sys.exc_info()
                 if _exception[0]:
-                    _err = ''.join(traceback.format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
+                    _err = ''.join(traceback.
+                        format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
                 template = "404.pyra"
-                ret = {"template":page, "error":str(_err),"name":self.server.owner.owner.getName()}
+                ret = {"template": page, "error": str(_err),
+                    "name": self.server.owner.owner.getName()}
             try:
                 if not ret:
-                    func = self.server.owner.controllers[str(page)]                    
-                    template, ret = eval("func"+"("+s_vars+")")
+                    func = self.server.owner.controllers[str(page)]
+                    template, ret = eval("func" + "(" + s_vars + ")")
             except Exception, e:
                 #No controller
                 _exception = sys.exc_info()
                 if _exception[0]:
-                    _err = ''.join(traceback.format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
+                    _err = ''.join(traceback.
+                        format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
                 template = "501.pyra"
-                ret = {"template":page, "error":str(_err)}
-            
+                ret = {"template": page, "error": str(_err)}
+
             try:
                 if os.path.exists(self.server.owner.template_path+os.sep+template):
-                    t = pyratemp.Template(filename=self.server.owner.template_path+os.sep+template, data=ret)
+                    t = pyratemp.Template(filename=                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                self.server.owner.template_path+os.sep+template, data=ret)
                 else:
                     olddir = os.path.curdir
                     #os.chdir(self.server.spade_path)
-                    t = pyratemp.Template(filename=self.server.owner.spade_path+os.sep+"templates"+os.sep+template, data=ret)
+                    t = pyratemp.Template(filename=                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                self.server.owner.spade_path+os.sep+"templates"+os.sep+template, data=ret)
                     #os.chdir(olddir)
             except pyratemp.TemplateSyntaxError, e:
                 _exception = sys.exc_info()
                 if _exception[0]:
-                    _err = ''.join(traceback.format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
-                t = pyratemp.Template(filename=self.server.owner.spade_path+os.sep+"templates"+os.sep+"501.pyra", data={"template":template, "error":str(_err),"name":self.server.owner.owner.getName()})
+                    _err = ''.join(traceback.
+                        format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
+                t = pyratemp.Template(filename=self.server.
+                    owner.spade_path+os.sep+"templates"+os.sep+"501.pyra", data={"template":template, "error":str(_err),"name":self.server.owner.owner.getName()})
             except Exception, e:
                 #No template
                 _exception = sys.exc_info()
                 if _exception[0]:
-                    _err = ''.join(traceback.format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
+                    _err = ''.join(traceback.
+                        format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
                 #print "###", _err, "###"
-                t = pyratemp.Template(filename=self.server.owner.spade_path+os.sep+"templates"+os.sep+"503.pyra", data={"page":template,"name":self.server.owner.owner.getName()})
+                t = pyratemp.Template(filename=self.server.
+                    owner.spade_path+os.sep+"templates"+os.sep+"503.pyra", data={"page":template,"name":self.server.owner.owner.getName()})
             try:
                 result = t()
             except Exception, e:
                 #Error in template
                 _exception = sys.exc_info()
                 if _exception[0]:
-                    _err = ''.join(traceback.format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
-                t = pyratemp.Template(filename=self.server.owner.spade_path+os.sep+"templates"+os.sep+"501.pyra", data={"template":template, "error":str(_err),"name":self.server.owner.owner.getName()})
+                    _err = ''.join(traceback.
+                        format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
+                t = pyratemp.Template(filename=self.server.
+                    owner.spade_path+os.sep+"templates"+os.sep+"501.pyra", data={"template":template, "error":str(_err),"name":self.server.owner.owner.getName()})
                 result = t()
-                
+
             r = result.encode("ascii", 'xmlcharrefreplace')
-            
+
             self.wfile.write(r)
-
-
-
-
-
-

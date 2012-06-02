@@ -76,9 +76,9 @@ class Checker:
         if protocol and not cryptoID:
             raise ValueError()
         if cryptoID:
-            import cryptoIDlib #So we raise an error here
+            import cryptoIDlib  # So we raise an error here
         if x509TrustList:
-            import cryptlib_py #So we raise an error here
+            import cryptlib_py  # So we raise an error here
         self.cryptoID = cryptoID
         self.protocol = protocol
         self.x509Fingerprint = x509Fingerprint
@@ -111,17 +111,17 @@ class Checker:
                 if isinstance(chain, X509CertChain):
                     if self.x509Fingerprint:
                         if chain.getFingerprint() != self.x509Fingerprint:
-                            raise TLSFingerprintError(\
-                                "X.509 fingerprint mismatch: %s, %s" % \
+                            raise TLSFingerprintError(
+                                "X.509 fingerprint mismatch: %s, %s" %
                                 (chain.getFingerprint(), self.x509Fingerprint))
-                    else: #self.x509TrustList
+                    else:  # self.x509TrustList
                         if not chain.validate(self.x509TrustList):
                             raise TLSValidationError("X.509 validation failure")
                         if self.x509CommonName and \
                                (chain.getCommonName() != self.x509CommonName):
-                           raise TLSAuthorizationError(\
-                               "X.509 Common Name mismatch: %s, %s" % \
-                               (chain.getCommonName(), self.x509CommonName))
+                            raise TLSAuthorizationError(
+                                "X.509 Common Name mismatch: %s, %s" %
+                                (chain.getCommonName(), self.x509CommonName))
                 elif chain:
                     raise TLSAuthenticationTypeError()
                 else:
@@ -130,12 +130,12 @@ class Checker:
                 import cryptoIDlib.CertChain
                 if isinstance(chain, cryptoIDlib.CertChain.CertChain):
                     if chain.cryptoID != self.cryptoID:
-                        raise TLSFingerprintError(\
-                            "cryptoID mismatch: %s, %s" % \
+                        raise TLSFingerprintError(
+                            "cryptoID mismatch: %s, %s" %
                             (chain.cryptoID, self.cryptoID))
                     if self.protocol:
                         if not chain.checkProtocol(self.protocol):
-                            raise TLSAuthorizationError(\
+                            raise TLSAuthorizationError(
                             "cryptoID protocol mismatch")
                     if not chain.validate():
                         raise TLSValidationError("cryptoID validation failure")
@@ -143,4 +143,3 @@ class Checker:
                     raise TLSAuthenticationTypeError()
                 else:
                     raise TLSNoAuthenticationError()
-

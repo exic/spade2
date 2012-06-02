@@ -2,6 +2,7 @@
 
 from utils import cryptomath
 
+
 class X509CertChain:
     """This class represents a chain of X.509 certificates.
 
@@ -139,11 +140,10 @@ class X509CertChain:
             if not (rootC is None):
                 cryptlib_py.cryptDestroyCert(rootC)
 
-
-
     def _checkChaining(self, lastC, rootC):
         import cryptlib_py
         import array
+
         def compareNames(name):
             try:
                 length = cryptlib_py.cryptGetAttributeString(lastC, name, None)

@@ -2,6 +2,7 @@
 A state machine for using TLS Lite with asynchronous I/O.
 """
 
+
 class AsyncStateMachine:
     """
     This is an abstract class that's used to integrate TLS Lite with
@@ -53,7 +54,7 @@ class AsyncStateMachine:
         if self.result == None:
             if activeOps != 0:
                 raise AssertionError()
-        elif self.result in (0,1):
+        elif self.result in (0, 1):
             if activeOps != 1:
                 raise AssertionError()
         else:
@@ -170,7 +171,7 @@ class AsyncStateMachine:
 
     def _doReadOp(self):
         self.result = self.reader.next()
-        if not self.result in (0,1):
+        if not self.result in (0, 1):
             readBuffer = self.result
             self.reader = None
             self.result = None
@@ -232,4 +233,3 @@ class AsyncStateMachine:
         except:
             self._clear()
             raise
-

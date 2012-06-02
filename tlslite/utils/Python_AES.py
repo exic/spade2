@@ -5,8 +5,10 @@ from cryptomath import *
 from AES import *
 from rijndael import rijndael
 
+
 def new(key, mode, IV):
     return Python_AES(key, mode, IV)
+
 
 class Python_AES(AES):
     def __init__(self, key, mode, IV):
@@ -21,10 +23,10 @@ class Python_AES(AES):
         chainBytes = stringToBytes(self.IV)
 
         #CBC Mode: For each block...
-        for x in range(len(plaintextBytes)/16):
+        for x in range(len(plaintextBytes) / 16):
 
             #XOR with the chaining block
-            blockBytes = plaintextBytes[x*16 : (x*16)+16]
+            blockBytes = plaintextBytes[x * 16: (x * 16) + 16]
             for y in range(16):
                 blockBytes[y] ^= chainBytes[y]
             blockString = bytesToString(blockBytes)
@@ -34,7 +36,7 @@ class Python_AES(AES):
 
             #Overwrite the input with the output
             for y in range(16):
-                plaintextBytes[(x*16)+y] = encryptedBytes[y]
+                plaintextBytes[(x * 16) + y] = encryptedBytes[y]
 
             #Set the next chaining block
             chainBytes = encryptedBytes
@@ -49,17 +51,17 @@ class Python_AES(AES):
         chainBytes = stringToBytes(self.IV)
 
         #CBC Mode: For each block...
-        for x in range(len(ciphertextBytes)/16):
+        for x in range(len(ciphertextBytes) / 16):
 
             #Decrypt it
-            blockBytes = ciphertextBytes[x*16 : (x*16)+16]
+            blockBytes = ciphertextBytes[x * 16: (x * 16) + 16]
             blockString = bytesToString(blockBytes)
             decryptedBytes = stringToBytes(self.rijndael.decrypt(blockString))
 
             #XOR with the chaining block and overwrite the input with output
             for y in range(16):
                 decryptedBytes[y] ^= chainBytes[y]
-                ciphertextBytes[(x*16)+y] = decryptedBytes[y]
+                ciphertextBytes[(x * 16) + y] = decryptedBytes[y]
 
             #Set the next chaining block
             chainBytes = blockBytes

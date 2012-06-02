@@ -9,144 +9,145 @@ import socket
 
 globalhostname = ""
 
+
 def generateCode():
-	# Fill the template with the correct data
-	
-	global jabber_template
-	global globalhostname
+    # Fill the template with the correct data
 
-	if os.name == "posix":
-			# If no hostname was previously specified, get one from the system
-		if globalhostname == "":	
-			hostname = socket.gethostname()
-		else:
-			hostname = globalhostname
+    global jabber_template
+    global globalhostname
 
-		path = os.sep+"usr"+os.sep+"share"+os.sep+"spade"
-	else:
-		# If no hostname was previously specified, get one from the system
-		if globalhostname == "":	
-			hostname = socket.gethostbyaddr(socket.gethostname())[0]
-		else:
-			hostname = globalhostname
-		path = "usr"+os.sep+"share"+os.sep+"spade"
-		
-	if hostname == "localhost": 
-		hostname = "127.0.0.1"
-		print "Translating localhost DNS to IP (127.0.0.1)."
+    if os.name == "posix":
+                    # If no hostname was previously specified, get one from the system
+        if globalhostname == "":
+            hostname = socket.gethostname()
+        else:
+            hostname = globalhostname
 
-	acc_passwd = "".join([string.ascii_letters[int(random.randint(0,len(string.ascii_letters)-1))] for a in range(8)])
-	ams_passwd = "".join([string.ascii_letters[int(random.randint(0,len(string.ascii_letters)-1))] for a in range(8)])
-	df_passwd = "".join([string.ascii_letters[int(random.randint(0,len(string.ascii_letters)-1))] for a in range(8)])
+        path = os.sep + "usr" + os.sep + "share" + os.sep + "spade"
+    else:
+        # If no hostname was previously specified, get one from the system
+        if globalhostname == "":
+            hostname = socket.gethostbyaddr(socket.gethostname())[0]
+        else:
+            hostname = globalhostname
+        path = "usr" + os.sep + "share" + os.sep + "spade"
 
+    if hostname == "localhost":
+        hostname = "127.0.0.1"
+        print "Translating localhost DNS to IP (127.0.0.1)."
 
-	spadexml = """
-	<spade>
+    acc_passwd = "".join([string.ascii_letters[int(random.randint(0,
+        len(string.ascii_letters) - 1))] for a in range(8)])
+    ams_passwd = "".join([string.ascii_letters[int(random.randint(0,
+        len(string.ascii_letters) - 1))] for a in range(8)])
+    df_passwd = "".join([string.ascii_letters[int(random.randint(0, len(
+        string.ascii_letters) - 1))] for a in range(8)])
 
-               <platform>
-                       <hostname>""" + hostname + """</hostname>
-                       <port>5222</port>
-		       <path>"""+path+"""</path>
-               </platform>
+    spadexml = """
+    <spade>
 
-               <acc>
-                      <hostname>acc."""+hostname+"""</hostname>
-                      <password>"""+acc_passwd+"""</password>
-                      <port>5222</port>
-		#MTPS#
-	       </acc>
+           <platform>
+                   <hostname>""" + hostname + """</hostname>
+                   <port>5222</port>
+                   <path>""" + path + """</path>
+           </platform>
 
-               <ams>
-                      <hostname>ams."""+hostname+"""</hostname>
-                      <password>"""+ams_passwd+"""</password>
-                      <port>5222</port>
-               </ams>
+           <acc>
+                  <hostname>acc.""" + hostname + """</hostname>
+                  <password>""" + acc_passwd + """</password>
+                  <port>5222</port>
+            #MTPS#
+           </acc>
 
-               <df>
-                      <hostname>df."""+hostname+"""</hostname>
-                      <password>"""+df_passwd+"""</password>
-                      <port>5222</port>
-               </df>
-	       
-        </spade>
-	"""
+           <ams>
+                  <hostname>ams.""" + hostname + """</hostname>
+                  <password>""" + ams_passwd + """</password>
+                  <port>5222</port>
+           </ams>
 
-	# Now fill the MTPs information
-	mtp_str = "\n"
-	for file in os.listdir("spade/mtp"):
-		try:
-			# If its a python script
-			if file[-3:] == ".py":
-				fname = file[:-3]
-				mtp_str = mtp_str + '''\t\t\t<mtp name="''' + fname + '''">\n\t\t\t\t<instance>''' + fname + '''</instance>\n'''
-				mtp_str = mtp_str + """\t\t\t\t<protocol>""" + fname + """</protocol>\n"""
-				mtp_str = mtp_str + """\t\t\t</mtp>\n\n"""
-		except Exception, e:
-			print "EXCEPTION GETTING MTPS: ", str(e)
-	
-	# Fill the data
-	# GUS: By default, no MTPs, thank you
-	#spadexml = spadexml.replace("#MTPS#", mtp_str)	
-	spadexml = spadexml.replace("#MTPS#", "")	
+           <df>
+                  <hostname>df.""" + hostname + """</hostname>
+                  <password>""" + df_passwd + """</password>
+                  <port>5222</port>
+           </df>
 
-	file = open("etc/spade.xml", "w+")
-	file.write(spadexml)
-	file.close()
+    </spade>
+    """
 
-	# Generating real xmppd.xml
-	if os.name == 'posix':
-		xmppdxml = '''
-		<server>
-	        	<servernames>
-	                	<name>'''+hostname+'''</name>
-		        </servernames>
-		        <certificate file="xmppd.pem"/>
-	        	<spool path="'''+str(os.environ['HOME'])+'''/.spade/spool"/>
-			<plugins>
-				<MUC jid="muc.'''+hostname+'''" name="SPADE MUC Component"/>
-				<WQ jid="wq.'''+hostname+'''" name="SPADE Workgroup Queues"/>
-			</plugins>
-                        <components>
-                                <AMS jid="ams.'''+hostname+'''" name="AMS" username="ams" password="'''+ams_passwd+'''"/>
-                                <DF jid="df.'''+hostname+'''" name="DF" username="df" password="'''+df_passwd+'''"/>
-                                <ACC jid="acc.'''+hostname+'''" name="ACC" username="acc" password="'''+acc_passwd+'''"/>
-                        </components>
-		</server>
-		'''
-	else:
-		xmppdxml = '''
-		<server>
-	        	<servernames>
-	                	<name>'''+hostname+'''</name>
-		        </servernames>
-		        <certificate file="xmppd.pem"/>
-	        	<spool path="usr/share/spade/xmppd/spool"/>
-			<plugins>
-				<MUC jid="muc.'''+hostname+'''" name="SPADE MUC Component"/>
-				<WQ jid="wq.'''+hostname+'''" name="SPADE Workgroup Queues"/>
-			</plugins>
-                        <components>
-                                <AMS jid="ams.'''+hostname+'''" name="AMS" username="ams" password="'''+ams_passwd+'''"/>
-                                <DF jid="df.'''+hostname+'''" name="DF" username="df" password="'''+df_passwd+'''"/>
-                                <ACC jid="acc.'''+hostname+'''" name="ACC" username="acc" password="'''+acc_passwd+'''"/>
-                        </components>
-		</server>
-		'''
+    # Now fill the MTPs information
+    mtp_str = "\n"
+    for file in os.listdir("spade/mtp"):
+        try:
+            # If its a python script
+            if file[-3:] == ".py":
+                fname = file[:-3]
+                mtp_str = mtp_str + '''\t\t\t<mtp name="''' + fname + '''">\n\t\t\t\t<instance>''' + fname + '''</instance>\n'''
+                mtp_str = mtp_str + """\t\t\t\t<protocol>""" + fname + """</protocol>\n"""
+                mtp_str = mtp_str + """\t\t\t</mtp>\n\n"""
+        except Exception, e:
+            print "EXCEPTION GETTING MTPS: ", str(e)
 
-	file = open("etc/xmppd.xml", "w+")
-	file.write(xmppdxml)
-	file.close()
+    # Fill the data
+    # GUS: By default, no MTPs, thank you
+    #spadexml = spadexml.replace("#MTPS#", mtp_str)
+    spadexml = spadexml.replace("#MTPS#", "")
 
+    file = open("etc/spade.xml", "w+")
+    file.write(spadexml)
+    file.close()
+
+    # Generating real xmppd.xml
+    if os.name == 'posix':
+        xmppdxml = '''
+        <server>
+                <servernames>
+                        <name>''' + hostname + '''</name>
+                </servernames>
+                <certificate file="xmppd.pem"/>
+                <spool path="''' + str(os.environ['HOME']) + '''/.spade/spool"/>
+                <plugins>
+                        <MUC jid="muc.'''+hostname+'''" name="SPADE MUC Component"/>
+                        <WQ jid="wq.'''+hostname+'''" name="SPADE Workgroup Queues"/>
+                </plugins>
+                <components>
+                        <AMS jid="ams.'''+hostname+'''" name="AMS" username="ams" password="'''+ams_passwd+'''"/>
+                        <DF jid="df.'''+hostname+'''" name="DF" username="df" password="'''+df_passwd+'''"/>
+                        <ACC jid="acc.'''+hostname+'''" name="ACC" username="acc" password="'''+acc_passwd+'''"/>
+                </components>
+        </server>
+        '''
+    else:
+        xmppdxml = '''
+        <server>
+                <servernames>
+                        <name>''' + hostname + '''</name>
+                </servernames>
+                <certificate file="xmppd.pem"/>
+                <spool path="usr/share/spade/xmppd/spool"/>
+                <plugins>
+                        <MUC jid="muc.'''+hostname+'''" name="SPADE MUC Component"/>
+                        <WQ jid="wq.'''+hostname+'''" name="SPADE Workgroup Queues"/>
+                </plugins>
+                <components>
+                        <AMS jid="ams.'''+hostname+'''" name="AMS" username="ams" password="'''+ams_passwd+'''"/>
+                        <DF jid="df.'''+hostname+'''" name="DF" username="df" password="'''+df_passwd+'''"/>
+                        <ACC jid="acc.'''+hostname+'''" name="ACC" username="acc" password="'''+acc_passwd+'''"/>
+                </components>
+        </server>
+        '''
+
+    file = open("etc/xmppd.xml", "w+")
+    file.write(xmppdxml)
+    file.close()
 
 
 if __name__ == '__main__':
     # We look for a command line parameter
     if len(sys.argv) > 1:
-	# There is a parameter
-	globalhostname = sys.argv[1]
+    # There is a parameter
+        globalhostname = sys.argv[1]
     else:
-	# There is no parameter (i.e. macho-mode)
-	pass
-	
-    generateCode()
+        # There is no parameter (i.e. macho-mode)
+        pass
 
+    generateCode()

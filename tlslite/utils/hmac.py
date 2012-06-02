@@ -6,6 +6,7 @@ Implements the HMAC algorithm as described by RFC 2104.
 copying)
 """
 
+
 def _strxor(s1, s2):
     """Utility method. XOR the two strings s1 and s2 (must have same length).
     """
@@ -15,13 +16,14 @@ def _strxor(s1, s2):
 # hashing module used.
 digest_size = None
 
+
 class HMAC:
     """RFC2104 HMAC class.
 
     This supports the API for Cryptographic Hash Functions (PEP 247).
     """
 
-    def __init__(self, key, msg = None, digestmod = None):
+    def __init__(self, key, msg=None, digestmod=None):
         """Create a new HMAC object.
 
         key:       key for the keyed hash object.
@@ -32,8 +34,8 @@ class HMAC:
             import md5
             digestmod = md5
 
-        if key == None: #TREVNEW - for faster copying
-            return      #TREVNEW
+        if key == None:  # TREVNEW - for faster copying
+            return  # TREVNEW
 
         self.digestmod = digestmod
         self.outer = digestmod.new()
@@ -66,8 +68,8 @@ class HMAC:
 
         An update to this copy won't affect the original object.
         """
-        other = HMAC(None) #TREVNEW - for faster copying
-        other.digest_size = self.digest_size #TREVNEW
+        other = HMAC(None)  # TREVNEW - for faster copying
+        other.digest_size = self.digest_size  # TREVNEW
         other.digestmod = self.digestmod
         other.inner = self.inner.copy()
         other.outer = self.outer.copy()
@@ -90,7 +92,8 @@ class HMAC:
         return "".join([hex(ord(x))[2:].zfill(2)
                         for x in tuple(self.digest())])
 
-def new(key, msg = None, digestmod = None):
+
+def new(key, msg=None, digestmod=None):
     """Create a new hashing object and return it.
 
     key: The starting key for the hash.

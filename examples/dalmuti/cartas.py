@@ -1,10 +1,10 @@
 # Clase para manejar las cartas del juego del Dalmuti
 
-class Carta:
-    
-    def __init__(self, tipo):
-        self.__tipo = tipo #Valor de 0 a 12
 
+class Carta:
+
+    def __init__(self, tipo):
+        self.__tipo = tipo  # Valor de 0 a 12
 
     def __cmp__(self, otro):
         # Comparamos segun el rango
@@ -39,7 +39,7 @@ class Carta:
 #Clase para manejar una jugada de una o mas cartas
 
 class jugada:
-    
+
     def __init__(self, cartas):
         self.cartas = cartas
 
@@ -60,14 +60,14 @@ class jugada:
         if self.cartas[-1] > otra.cartas[-1]:
             return 1
 
-        #Es la misma jugada        
+        #Es la misma jugada
         return 0
 
     def __str__(self):
         res = ""
-        if len(self.cartas)>0:
+        if len(self.cartas) > 0:
             for i in self.cartas:
-                res = res+str(i)+" "
+                res = res + str(i) + " "
 
         return res
 

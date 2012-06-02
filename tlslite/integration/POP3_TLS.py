@@ -8,10 +8,11 @@ from tlslite.integration.ClientHelper import ClientHelper
 # POP TLS PORT
 POP3_TLS_PORT = 995
 
+
 class POP3_TLS(POP3, ClientHelper):
     """This class extends L{poplib.POP3} with TLS support."""
 
-    def __init__(self, host, port = POP3_TLS_PORT,
+    def __init__(self, host, port=POP3_TLS_PORT,
                  username=None, password=None, sharedKey=None,
                  certChain=None, privateKey=None,
                  cryptoID=None, protocol=None,

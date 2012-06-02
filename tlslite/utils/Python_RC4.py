@@ -3,8 +3,10 @@
 from RC4 import RC4
 from cryptomath import *
 
+
 def new(key):
     return Python_RC4(key)
+
 
 class Python_RC4(RC4):
     def __init__(self, key):

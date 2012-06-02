@@ -1,5 +1,6 @@
 """Class returned by TLSConnection.makefile()."""
 
+
 class FileObject:
     """This class provides a file object interface to a
     L{tlslite.TLSConnection.TLSConnection}.
@@ -10,11 +11,11 @@ class FileObject:
     _fileobject class in socket.py.  Note that fileno() is not
     implemented."""
 
-    default_bufsize = 16384 #TREV: changed from 8192
+    default_bufsize = 16384  # TREV: changed from 8192
 
     def __init__(self, sock, mode='rb', bufsize=-1):
         self._sock = sock
-        self.mode = mode # Not actually used in this version
+        self.mode = mode  # Not actually used in this version
         if bufsize < 0:
             bufsize = self.default_bufsize
         self.bufsize = bufsize
@@ -26,8 +27,8 @@ class FileObject:
         else:
             self._rbufsize = bufsize
         self._wbufsize = bufsize
-        self._rbuf = "" # A string
-        self._wbuf = [] # A list of strings
+        self._rbuf = ""  # A string
+        self._wbuf = []  # A list of strings
 
     def _getclosed(self):
         return self._sock is not None
@@ -36,7 +37,7 @@ class FileObject:
     def close(self):
         try:
             if self._sock:
-                for result in self._sock._decrefAsync(): #TREV
+                for result in self._sock._decrefAsync():  # TREV
                     pass
         finally:
             self._sock = None
@@ -58,7 +59,7 @@ class FileObject:
     #    raise NotImplementedError() #TREV
 
     def write(self, data):
-        data = str(data) # XXX Should really reject non-string non-buffers
+        data = str(data)  # XXX Should really reject non-string non-buffers
         if not data:
             return
         self._wbuf.append(data)

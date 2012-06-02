@@ -7,12 +7,14 @@ from datetime import datetime
 from xmpp import *
 from xmpp.protocol import *
 
+
 class PSNode(object):
     """
     Publish-Subscribe node.
 
     TODO: Items must retain info about its publisher. We have only implemented
-          owners and subscribes, not publishers. So publisher is always the onwer.
+          owners and subscribes,
+               not publishers. So publisher is always the onwer.
     """
 
     def __init__(self, id, owner, type='leaf', parent=None, children=[], members={}, access_model='presence'):
@@ -39,10 +41,11 @@ class PSNode(object):
             if id not in self.item_ids:
                 self.item_ids.append(id)
             self.items[id] = content
-            self.items_timestamp[id] = datetime.utcnow().isoformat().split('.')[0] + 'Z'
+            self.items_timestamp[id] = datetime.utcnow()
+                .isoformat().split('.')[0] + 'Z'
             #print self.items_timestamp[id], self.items[id], id
-        except Exception,e:
-            self.DEBUG('Exception in addItem: '+str(e),"error")
+        except Exception, e:
+            self.DEBUG('Exception in addItem: ' + str(e), "error")
 
     def __repr__(self):
         return 'PSNode(%s, %s)' % (self.id, self.type)
@@ -50,24 +53,28 @@ class PSNode(object):
     def __str__(self):
         return self.__repr__()
 
+
 class PubSubServer(PlugIn):
 
     NS = NS_PUBSUB
 
-    def plugin(self,server):
+    def plugin(self, server):
         self.name = self._owner.servernames[0]
         self.nodes = {}
 
         for ns in (NS_PUBSUB, NS_PUBSUB_ERRORS, NS_PUBSUB_EVENTS, NS_PUBSUB_OWNER):
-            server.Dispatcher.RegisterHandler('iq', self.PubSubIqHandler, typ='set', ns=ns, xmlns=NS_CLIENT)
-            server.Dispatcher.RegisterHandler('iq', self.PubSubIqHandler, typ='set', ns=ns, xmlns=NS_COMPONENT_ACCEPT)
+            server.Dispatcher.RegisterHandler('iq', self.
+                PubSubIqHandler, typ='set', ns=ns, xmlns=NS_CLIENT)
+            server.Dispatcher.RegisterHandler('iq', self.
+                PubSubIqHandler, typ='set', ns=ns, xmlns=NS_COMPONENT_ACCEPT)
 
     def _getIqError(self, iq, name, specific=None):
         if specific is None:
             return Error(iq, NS_STANZAS + ' ' + name)
         else:
             error_node = ErrorNode(name)
-            error_node.addChild(name=specific, attrs={'xmlns':NS_PUBSUB_ERRORS})
+            error_node.addChild(name=specific, attrs={'xmlns':
+                NS_PUBSUB_ERRORS})
             iq = iq.buildReply('error')
             iq.addChild(node=error_node)
             return iq
@@ -82,10 +89,13 @@ class PubSubServer(PlugIn):
             for jid in node.members.keys():
                 #print 'Enviando %s a %s' % (item_id,jid)
                 msg = Message(frm=self.name, to=jid)
-                msg.setID(str(uuid4())) #TODO: Do this automatically in xmpp.protocol.Protocol
-                event_node = Node(tag='event', attrs={'xmlns':NS_PUBSUB_EVENTS})
-                items_node = Node(tag='items', attrs={'node':node_id})
-                item_node = Node(tag='item', attrs={'id':item_id, 'timestamp':node.items_timestamp[item_id]})
+                msg.setID(str(uuid4()))
+                     #TODO: Do this automatically in xmpp.protocol.Protocol
+                event_node = Node(tag='event', attrs={
+                    'xmlns': NS_PUBSUB_EVENTS})
+                items_node = Node(tag='items', attrs={'node': node_id})
+                item_node = Node(tag='item', attrs={'id':
+                    item_id, 'timestamp': node.items_timestamp[item_id]})
                 if frm is not None:
                     item_node['publisher'] = frm
                 item_node.addChild(node=node.items[item_id])
@@ -94,13 +104,10 @@ class PubSubServer(PlugIn):
                 msg.addChild(node=event_node)
                 s = self._owner.getsession(jid)
                 s.send(msg)
-        except Exception,e:
-            self.DEBUG('Exception in sendItem: '+str(e),"error")
-
+        except Exception, e:
+            self.DEBUG('Exception in sendItem: ' + str(e), "error")
 
         #TODO: If we had a maximum, we should remove the first item here. Doing a FIFO.
-
-
     def PubSubIqHandler(self, session, stanza):
         """
         XXX: We do not validate. We just get what we want and that is enough.
@@ -108,7 +115,7 @@ class PubSubServer(PlugIn):
 
         try:
 
-            self.DEBUG('PubSub Iq handler called','info')
+            self.DEBUG('PubSub Iq handler called', 'info')
 
             #pprint(self._owner.DB.db)
 
@@ -129,11 +136,12 @@ class PubSubServer(PlugIn):
 
                 #TODO: If no name, this is an instant node.
 
-                if False: #TODO: Registro
-                    session.send(self._getIqError(stanza, 'registration-required'))
+                if False:  # TODO: Registro
+                    session.send(self._getIqError(
+                        stanza, 'registration-required'))
                     raise NodeProcessed
 
-                if False: #TODO: cuando tengamos privilegios
+                if False:  # TODO: cuando tengamos privilegios
                     session.send(self._getIqError(stanza, 'forbidden'))
                     raise NodeProcessed
 
@@ -142,22 +150,26 @@ class PubSubServer(PlugIn):
                     session.send(iq)
                     raise NodeProcessed
 
-                if False: #TODO: Access model
-                    session.send(self._getIqError(stanza, 'not-acceptable', 'unsupported-access-model'))
+                if False:  # TODO: Access model
+                    session.send(self._getIqError(
+                        stanza, 'not-acceptable', 'unsupported-access-model'))
                     raise NodeProcessed
 
-                self.nodes[node_id] = PSNode(id=node_id, owner=stanza.getFrom())
+                self.nodes[node_id] = PSNode(id=node_id,
+                     owner=stanza.getFrom())
 
                 # Add node
                 #print self.nodes
                 self.DEBUG('Creating node: %s' % create_node, 'info')
-                
+
                 id = stanza.getAttr('id')
-                if isinstance(stanza,Protocol): stanza = Iq(node=stanza)
+                if isinstance(stanza, Protocol):
+                    stanza = Iq(node=stanza)
 
                 iq = stanza.buildReply('result')
-                if id: iq.setID(id)
-                pubsub_node = Node(tag='pubsub', attrs={'xmlns':NS_PUBSUB})
+                if id:
+                    iq.setID(id)
+                pubsub_node = Node(tag='pubsub', attrs={'xmlns': NS_PUBSUB})
                 pubsub_node.addChild(node=create_node)
                 iq.addChild(node=pubsub_node)
 
@@ -169,7 +181,7 @@ class PubSubServer(PlugIn):
 
                 node_id = pubsub_node.getTag('delete').getAttr('node')
 
-                if node_id is None: #FIXME
+                if node_id is None:  # FIXME
                     self.DEBUG('Node is Non', 'error')
                     session.send(self._getIqError(stanza, 'item-not-found'))
                     raise NodeProcessed
@@ -195,13 +207,14 @@ class PubSubServer(PlugIn):
                 # Notify no all subscribers
                 for jid in node.members.keys():
                     msg = Message(frm=self.name, to=jid)
-                    msg.setID(str(uuid4())) #TODO: Do this automatically in xmpp.protocol.Protocol
-                    event_node = Node(tag='event', attrs={'xmlns':NS_PUBSUB + '#event'})
-                    event_node.addChild(name='delete', attrs={'node':node_id})
+                    msg.setID(str(uuid4()))
+                         #TODO: Do this automatically in xmpp.protocol.Protocol
+                    event_node = Node(tag='event',
+                         attrs={'xmlns': NS_PUBSUB + '#event'})
+                    event_node.addChild(name='delete', attrs={'node': node_id})
                     msg.addChild(node=event_node)
                     s = self._owner.getsession(jid)
                     s.send(msg)
-
 
             # SUBSCRIBE
             elif pubsub_node.getTag('subscribe') is not None:
@@ -216,7 +229,8 @@ class PubSubServer(PlugIn):
 
                 #print 'nodes: ', self.nodes
                 if node_id is None or jid is None: #TODO: Que enviar aquí?, además, jid no es None, peta antes
-                    self.DEBUG('No node id or jid in subscribe message.', 'error')
+                    self.DEBUG(
+                        'No node id or jid in subscribe message.', 'error')
                     raise NodeProcessed
 
                 if node_id not in self.nodes:
@@ -225,7 +239,8 @@ class PubSubServer(PlugIn):
                     raise NodeProcessed
 
                 if not stanza.getFrom().bareMatch(jid): # Trying to subscribe a JID different from the real one
-                    session.send(self._getIqError(stanza, 'bad-request', 'invalid-jid'))
+                    session.send(self._getIqError(
+                        stanza, 'bad-request', 'invalid-jid'))
                     raise NodeProcessed
 
                 node = self.nodes[node_id]
@@ -233,7 +248,8 @@ class PubSubServer(PlugIn):
                 #print 'access_model: ', 'presence'
 
                 if access_model == 'presence':
-                    owner_roster = self._owner.DB.db[self.name][node.owner.getNode()]['roster']
+                    owner_roster = self._owner.DB.db[
+                        self.name][node.owner.getNode()]['roster']
                     if jid in owner_roster:
                         if owner_roster[jid.getStripped()]['subscription'] not in ('from', 'both'):
                             if owner_roster[jid.getStripped()]['status'] == 'pending_in': #XXX: pending_out too?
@@ -243,14 +259,15 @@ class PubSubServer(PlugIn):
                                 session.send(self._getIqError(stanza, 'not-authorized', 'presence-subscription-required'))
                                 raise NodeProcessed
                     else:
-                        session.send(self._getIqError(stanza, 'not-authorized', 'presence-subscription-required'))
+                        session.send(self.
+                            _getIqError(stanza, 'not-authorized', 'presence-subscription-required'))
                         raise NodeProcessed
 
-                if False: #TODO: Roster access_model
+                if False:  # TODO: Roster access_model
                     #TODO: WE DO NOT IMPLEMENT ROSTER ACCESS MODEL EVEN IF IT IS REQUIRED BY XEP-163
                     pass
 
-                if False: #TODO: Whitelist access_model
+                if False:  # TODO: Whitelist access_model
                     #TODO: WE DO NOT IMPLEMENT WHITELIST ACCESS MODEL EVEN IF IT IS REQUIRED BY XEP-163
                     pass
 
@@ -258,12 +275,11 @@ class PubSubServer(PlugIn):
                     #TODO: WE DO NOT IMPLEMENT BLOCKING
                     pass
 
-                if False: #TODO: Establish a max_subscription threshold.
+                if False:  # TODO: Establish a max_subscription threshold.
                     #TODO: Let's people of the future care about security.
                     pass
 
                 # SUCESS
-
 
                 # Add new member to node, with its subid (an UUID)
                 node.members[jid] = str(uuid4())
@@ -272,7 +288,7 @@ class PubSubServer(PlugIn):
                 iq = stanza.buildReply('result')
                 pubsub_node = Node(tag='pubsub', attrs={'xmlns': NS_PUBSUB})
                 pubsub_node.addChild(name='subscription', attrs={
-                    'node':node_id,
+                    'node': node_id,
                     'jid': jid,
                     'subid': node.members[jid],
                     'subscription': 'subscribed'
@@ -280,15 +296,15 @@ class PubSubServer(PlugIn):
                 iq.addChild(node=pubsub_node)
                 session.send(iq)
 
-
             # UNSUBSCRIBE
             elif pubsub_node.getTag('unsubscribe') is not None:
                 unsubscribe_node = pubsub_node.getTag('unsubscribe')
                 node_id = unsubscribe_node.getAttr('node')
                 jid = unsubscribe_node.getAttr('jid')
 
-                if node_id is None or jid is None: #TODO: Que enviar aquí?
-                    self.DEBUG('No node id or jid in subscribe message.', 'error')
+                if node_id is None or jid is None:  # TODO: Que enviar aquí?
+                    self.DEBUG(
+                        'No node id or jid in subscribe message.', 'error')
                     raise NodeProcessed
 
                 if node_id not in self.nodes:
@@ -298,14 +314,16 @@ class PubSubServer(PlugIn):
 
 
                 if not stanza.getFrom().bareMatch(JID(jid)): # Trying to subscribe a JID different from the real one
-                    session.send(self._getIqError(stanza, 'bad-request', 'invalid-jid'))
+                    session.send(self._getIqError(
+                        stanza, 'bad-request', 'invalid-jid'))
                     raise NodeProcessed
 
                 node = self.nodes[node_id]
 
                 if jid not in node.members:
                     #XXX: Owner is not a member, so he would trigger this error too if he is stupid.
-                    session.send(self._getIqError(stanza, 'unexpected-request', 'not-subscribed'))
+                    session.send(self._getIqError(
+                        stanza, 'unexpected-request', 'not-subscribed'))
                     raise NodeProcessed
 
                 del node.members[jid]
@@ -313,25 +331,26 @@ class PubSubServer(PlugIn):
                 # SUCESS
                 session.send(stanza.buildReply('result'))
 
-
             # PUBLISH ITEM
             elif pubsub_node.getTag('publish') is not None:
                 publish_node = pubsub_node.getTag('publish')
                 node_id = publish_node['node']
 
-                if node_id is None: #TODO: Que enviar aquí?
-                    self.DEBUG('No node id or jid in subscribe message.', 'error')
+                if node_id is None:  # TODO: Que enviar aquí?
+                    self.DEBUG(
+                        'No node id or jid in subscribe message.', 'error')
                     raise NodeProcessed
 
                 item_node = publish_node.getTag('item')
 
-                if item_node is None: #TODO: Que enviar aquí?
+                if item_node is None:  # TODO: Que enviar aquí?
                     self.DEBUG('No item', 'error')
                     raise NodeProcessed
 
                 if node_id not in self.nodes:
                     # XEP-60 defines auto-create, XEP-163 enforces it.
-                    self.nodes[node_id] = PSNode(id=node_id, owner=stanza.getFrom())
+                    self.nodes[node_id] = PSNode(id=
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        node_id, owner=stanza.getFrom())
 
                 node = self.nodes[node_id]
 
@@ -344,24 +363,22 @@ class PubSubServer(PlugIn):
                 if item_id is None:
                     item_id = str(uuid4())
 
-              
-
                 #print item_node.getChildren()
-                self.nodes[node_id].addItem(item_id, item_node.getChildren()[0])
+                self.nodes[node_id].addItem(item_id,
+                     item_node.getChildren()[0])
 
                 # SUCESS
 
                 iq = stanza.buildReply('result')
-                pubsub_node = Node(tag='pubsub', attrs={'xmlns':NS_PUBSUB})
-                publish_node = Node(tag='publish', attrs={'node':node_id})
-                publish_node.addChild(name='item', attrs={'id':item_id})
+                pubsub_node = Node(tag='pubsub', attrs={'xmlns': NS_PUBSUB})
+                publish_node = Node(tag='publish', attrs={'node': node_id})
+                publish_node.addChild(name='item', attrs={'id': item_id})
                 pubsub_node.addChild(node=publish_node)
                 iq.addChild(node=pubsub_node)
                 session.send(iq)
 
                 # Send item to all subscriptors.
                 self._sendItem(node_id, item_id, stanza.getFrom())
-
 
             # NON-IMPLEMENTED ACTION
             else:
@@ -370,5 +387,5 @@ class PubSubServer(PlugIn):
             raise NodeProcessed
         except NodeProcessed:
             raise NodeProcessed
-        except Exception,e:
-            self.DEBUG("Exception in PubSub Handler: " + str(e),"error")
+        except Exception, e:
+            self.DEBUG("Exception in PubSub Handler: " + str(e), "error")

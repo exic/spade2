@@ -8,10 +8,11 @@ from tlslite.integration.ClientHelper import ClientHelper
 # IMAP TLS PORT
 IMAP4_TLS_PORT = 993
 
+
 class IMAP4_TLS(IMAP4, ClientHelper):
     """This class extends L{imaplib.IMAP4} with TLS support."""
 
-    def __init__(self, host = '', port = IMAP4_TLS_PORT,
+    def __init__(self, host='', port=IMAP4_TLS_PORT,
                  username=None, password=None, sharedKey=None,
                  certChain=None, privateKey=None,
                  cryptoID=None, protocol=None,
@@ -115,8 +116,7 @@ class IMAP4_TLS(IMAP4, ClientHelper):
 
         IMAP4.__init__(self, host, port)
 
-
-    def open(self, host = '', port = IMAP4_TLS_PORT):
+    def open(self, host='', port=IMAP4_TLS_PORT):
         """Setup connection to remote server on "host:port".
 
         This connection will be used by the routines:

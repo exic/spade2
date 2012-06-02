@@ -1,4 +1,4 @@
-def getSequenceDiagram( text="Alice-->Bob", style = 'napkin' ):
+def getSequenceDiagram(text="Alice-->Bob", style='napkin'):
         import urllib
         import re
         request = {}
@@ -11,7 +11,6 @@ def getSequenceDiagram( text="Alice-->Bob", style = 'napkin' ):
         line = f.readline()
         f.close()
 
-
         expr = re.compile("(\?img=[a-zA-Z0-9]+)")
         m = expr.search(line)
 
@@ -21,4 +20,4 @@ def getSequenceDiagram( text="Alice-->Bob", style = 'napkin' ):
 
         #urllib.urlretrieve("http://www.websequencediagrams.com/" + m.group(0),outputFile )
 
-        return "http://www.websequencediagrams.com/"+str(m.group(0))
+        return "http://www.websequencediagrams.com/" + str(m.group(0))

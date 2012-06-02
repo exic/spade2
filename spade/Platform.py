@@ -25,10 +25,13 @@ import BasicFipaDateTime
 from wui import *
 from os.path import *
 
-class PlatformRestart(Exception):
-    def __init__(self): pass
-    def __str__(self): return
 
+class PlatformRestart(Exception):
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return
 
 
 class SpadePlatform(Agent.PlatformAgent):
@@ -39,7 +42,8 @@ class SpadePlatform(Agent.PlatformAgent):
         def _process(self):
             msg = self._receive(True)
             if (msg != None):
-                self.myAgent.DEBUG("SPADE Platform Received a message: " + str(msg))
+                self.myAgent.DEBUG(
+                    "SPADE Platform Received a message: " + str(msg))
                 if msg.getSender() == self.myAgent.getAID():
                     # Prevent self-loopholes
                     self.myAgent.DEBUG("ACC LOOP HOLE", "warn")
@@ -50,21 +54,23 @@ class SpadePlatform(Agent.PlatformAgent):
                 for to in to_list:
                     if (self.myAgent.getAID().getName() != to.getName()):
                         if not to.getAddresses()[0] in d:
-                            d[to.getAddresses()[0]]=list()
+                            d[to.getAddresses()[0]] = list()
                         d[to.getAddresses()[0]].append(to)
-                for k,v in d.items():
+                for k, v in d.items():
                     newmsg = msg
                     newmsg.to = v
                     try:
                         protocol, receiver_URI = k.split("://")
                     except:
-                        self.myAgent.DEBUG("Malformed Agent Address URI: " + str(k),"error")
+                        self.myAgent.DEBUG(
+                            "Malformed Agent Address URI: " + str(k), "error")
                         break
 
                     # Check if one of our MTPs handles this protocol
                     #switch(protocol)
                     if protocol in self.myAgent.mtps.keys():
-                        self.myAgent.DEBUG("Message through protocol " + str(protocol))
+                        self.myAgent.DEBUG(
+                            "Message through protocol " + str(protocol))
                         #ap = ACLParser.ACLxmlParser()
                         #payload = ap.encodeXML(newmsg)
                         payload = str(newmsg)
@@ -107,7 +113,8 @@ class SpadePlatform(Agent.PlatformAgent):
                 print "ACC::dying... it shouldn't happen"
 
     def __init__(self, node, password, server, port, config=None):
-        Agent.PlatformAgent.__init__(self, node, password, server, port, config=config, debug=[])
+        Agent.PlatformAgent.__init__(self, node, password, server,
+             port, config=config, debug=[])
         self.mtps = {}
 
     def _setup(self):
@@ -116,60 +123,60 @@ class SpadePlatform(Agent.PlatformAgent):
         #self.addBehaviour(self.SWIBehaviour())
         #swi.SWIHandler.platform = self
         #self.wui = WUI(self)
-        self.wui.registerController("index",self.index)
+        self.wui.registerController("index", self.index)
         self.wui.registerController("agents", self.agents)
         self.wui.registerController("services", self.services)
         self.wui.setPort(8008)
         self.wui.start()
-        
+
         # Load MTPs
-        for name,mtp in self.config.acc.mtp.items():
+        for name, mtp in self.config.acc.mtp.items():
         #self.mtps[mtp.protocol] = mtp.instance(name)
             try:
-                 mtp_path = "."+os.sep+"spade"+os.sep+"mtp"
-                 if os.path.exists(mtp_path):
-                      sys.path.append(mtp_path)
-                 else:
+                mtp_path = "." + os.sep + "spade" + os.sep + "mtp"
+                if os.path.exists(mtp_path):
+                    sys.path.append(mtp_path)
+                else:
                     # This path should come from the config file . . .
-                      mtp_path = os.sep+"usr"+os.sep+"share"+os.sep+"spade"+os.sep+"mtp"
-                      sys.path.append(mtp_path)
+                    mtp_path = os.sep+"usr"+os.sep+"share"+os.sep+"spade"+os.sep+"mtp"
+                    sys.path.append(mtp_path)
 
-                 mod = __import__(name)
-                 self.mtps[mtp['protocol']] = mod.INSTANCE(name,self.config,self)
+                mod = __import__(name)
+                self.mtps[mtp['protocol']] = mod.INSTANCE(
+                    name, self.config, self)
 
             except Exception, e:
-                print "EXCEPTION IMPORTING MTPS: ",str(e)
+                print "EXCEPTION IMPORTING MTPS: ", str(e)
                 _exception = sys.exc_info()
                 if _exception[0]:
-                     msg='\n'+''.join(traceback.format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
-                     print msg
+                    msg = '\n' + ''.join(traceback.
+                        format_exception(_exception[0], _exception[1], _exception[2])).rstrip()
+                    print msg
 
     def takeDown(self):
-        for k,mtp in self.mtps.items():
+        for k, mtp in self.mtps.items():
             try:
                 mtp.stop()
                 del self.mtps[k]
             except:
                 pass
 
-
-
     #Controllers
     def index(self):
         import sys
         import time
         servername = self.getDomain()
-        platform = self.getName()        
+        platform = self.getName()
         version = str(sys.version)
         the_time = str(time.ctime())
-	doc_path = abspath('.')
+        doc_path = abspath('.')
         return "webadmin_indigo.pyra", dict(name=platform,servername=servername, platform=platform, version=version, time=the_time, doc_path=doc_path)
 
     def agents(self):
         import sys
         import time
         servername = self.getDomain()
-        platform = self.getName()        
+        platform = self.getName()
         version = str(sys.version)
         the_time = str(time.ctime())
         search = self.searchAgent(AmsAgentDescription())
@@ -184,22 +191,22 @@ class SpadePlatform(Agent.PlatformAgent):
             for agent in search:
                 if agent.getAID():
                     aw = "#"
-                    for addr in agent.getAID().getAddresses():                    
+                    for addr in agent.getAID().getAddresses():
                         if "awui://" in addr:
                             aw = addr.replace("awui://", "http://")
                             break
                     awuis[agent.getAID().getName()] = aw
-        self.DEBUG("AWUIs: "+str(awuis))
+        self.DEBUG("AWUIs: " + str(awuis))
         return "agents.pyra", dict(name=platform,servername=servername, platform=platform, version=version, time=the_time, agents=search, awuis=awuis)
 
     def services(self):
         import sys
         import time
         servername = self.getDomain()
-        platform = self.getName()        
+        platform = self.getName()
         version = str(sys.version)
         the_time = str(time.ctime())
-        try:        
+        try:
             search = self.searchService(DfAgentDescription())
         except Exception, e:
             print "Exception: " + str(e)
@@ -215,25 +222,7 @@ class SpadePlatform(Agent.PlatformAgent):
         self.DEBUG("Services: " + str(servs))
         return "services.pyra", dict(name=platform,servername=servername, platform=platform, version=version, time=the_time, services=servs)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def getMembers(self,aname):
+    def getMembers(self, aname):
         msg = ACLMessage.ACLMessage()
         msg.setOntology("spade:x:organization")
         template = Behaviour.ACLTemplate()
@@ -242,23 +231,18 @@ class SpadePlatform(Agent.PlatformAgent):
         b = self.GetMembersBehav()
         b.msg = msg
         b.aname = aname
-        self.addBehaviour(b,t)
+        self.addBehaviour(b, t)
         b.join()
         return b.result
 
     class GetMembersBehav(Behaviour.OneShotBehaviour):
         def _process(self):
             self.result = []
-	    self.msg.addReceiver(AID.aid(self.aname, addresses=["xmpp://"+self.aname]))
-	    self.msg.setContent("MEMBERS")
-	    self.myAgent.send(self.msg)
-	    rep = None
-	    rep = self._receive(True, 20)
-	    if rep:
-	        print "The members list arrived"
-	        self.result = rep.getContent().split(",")
-
-
-
-
-
+            self.msg.addReceiver(AID.aid(self.aname, addresses=                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ["xmpp://" + self.aname]))
+            self.msg.setContent("MEMBERS")
+            self.myAgent.send(self.msg)
+            rep = None
+            rep = self._receive(True, 20)
+            if rep:
+                print "The members list arrived"
+                self.result = rep.getContent().split(",")

@@ -31,6 +31,7 @@ if cryptomath.pycryptoLoaded:
 # Factory Functions for AES
 # **************************************************************************
 
+
 def createAES(key, IV, implList=None):
     """Create a new AES object.
 
@@ -56,6 +57,7 @@ def createAES(key, IV, implList=None):
         elif impl == "python":
             return Python_AES.new(key, 2, IV)
     raise NotImplementedError()
+
 
 def createRC4(key, IV, implList=None):
     """Create a new RC4 object.
@@ -86,6 +88,8 @@ def createRC4(key, IV, implList=None):
     raise NotImplementedError()
 
 #Create a new TripleDES instance
+
+
 def createTripleDES(key, IV, implList=None):
     """Create a new 3DES object.
 
@@ -103,7 +107,7 @@ def createTripleDES(key, IV, implList=None):
 
     for impl in implList:
         if impl == "cryptlib" and cryptomath.cryptlibpyLoaded:
-           return Cryptlib_TripleDES.new(key, 2, IV)
+            return Cryptlib_TripleDES.new(key, 2, IV)
         elif impl == "openssl" and cryptomath.m2cryptoLoaded:
             return OpenSSL_TripleDES.new(key, 2, IV)
         elif impl == "pycrypto" and cryptomath.pycryptoLoaded:

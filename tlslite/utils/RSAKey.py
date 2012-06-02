@@ -181,16 +181,16 @@ class RSAKey:
             return None
         m = self._rawPrivateKeyOp(c)
         decBytes = numberToBytes(m)
-        if (len(decBytes) != numBytes(self.n)-1): #Check first byte
+        if (len(decBytes) != numBytes(self.n) - 1):  # Check first byte
             return None
-        if decBytes[0] != 2: #Check second byte
+        if decBytes[0] != 2:  # Check second byte
             return None
-        for x in range(len(decBytes)-1): #Scan through for zero separator
-            if decBytes[x]== 0:
+        for x in range(len(decBytes) - 1):  # Scan through for zero separator
+            if decBytes[x] == 0:
                 break
         else:
             return None
-        return decBytes[x+1:] #Return everything after the separator
+        return decBytes[x + 1:]  # Return everything after the separator
 
     def _rawPrivateKeyOp(self, m):
         raise NotImplementedError()
@@ -231,22 +231,20 @@ class RSAKey:
         raise NotImplementedError()
     generate = staticmethod(generate)
 
-
     # **************************************************************************
     # Helper Functions for RSA Keys
     # **************************************************************************
-
     def _addPKCS1SHA1Prefix(self, bytes):
-        prefixBytes = createByteArraySequence(\
-            [48,33,48,9,6,5,43,14,3,2,26,5,0,4,20])
+        prefixBytes = createByteArraySequence(
+            [48, 33, 48, 9, 6, 5, 43, 14, 3, 2, 26, 5, 0, 4, 20])
         prefixedBytes = prefixBytes + bytes
         return prefixedBytes
 
     def _addPKCS1Padding(self, bytes, blockType):
-        padLength = (numBytes(self.n) - (len(bytes)+3))
-        if blockType == 1: #Signature padding
+        padLength = (numBytes(self.n) - (len(bytes) + 3))
+        if blockType == 1:  # Signature padding
             pad = [0xFF] * padLength
-        elif blockType == 2: #Encryption padding
+        elif blockType == 2:  # Encryption padding
             pad = createByteArraySequence([])
             while len(pad) < padLength:
                 padBytes = getRandomBytes(padLength * 2)
